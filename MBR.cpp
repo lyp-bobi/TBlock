@@ -56,3 +56,24 @@ bool MBR::intersects(Point &s, Point &e) {
             lineIntersects(ss,ee,ll, ul) || lineIntersects(ss,ee,ul, ur) ||
             lineIntersects(ss,ee,ur, lr) || lineIntersects(ss,ee,lr, ll));
 }
+
+//bool intersects(GEOSGeometry &g,double m_tmin, double m_tmax, Point &s, Point&e){
+//    if(e.m_t<m_tmin||s.m_t>m_tmax) return false;
+//
+//    Point ss, ee;
+//    if(s.m_t<m_tmin){
+//        ss = makemid(s,e, m_tmin);
+//    }else{
+//        ss = s;
+//    }
+//    if(e.m_t>m_tmax){
+//        ee = makemid(s,e, m_tmax);
+//    }else{
+//        ee = e;
+//    }
+//    GEOSCoordSequence* seq = GEOSCoordSeq_create(2,2);
+//    GEOSCoordSeq_setXY(seq,0,ss.m_x, ss.m_y);
+//    GEOSCoordSeq_setXY(seq,1,ee.m_x, ee.m_y);
+//    GEOSGeometry *line = GEOSGeom_createLineString(seq);
+//    return GEOSIntersects(&g,line);
+//}

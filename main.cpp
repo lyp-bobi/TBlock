@@ -22,7 +22,7 @@ void regress(){
     TBlock tb;
     double time1=0, time2=0;
     int curLine = 0;
-    MBR r(116,116.5,40,40.5, 800, 8000);
+    MBR r(116, 116.5, 40, 40.5, 800, 8000);
     int i = 0;
     double time;
     std::chrono::microseconds duration;
@@ -60,7 +60,7 @@ int main() {
     TBlock tb;
     double time1=0, time2=0;
     int curLine = 0;
-    MBR r(116,116.5,40,40.5, 6800, 493000);
+    MBR r(116, 116.5, 40, 40.5, 6800, 493000);
     int i = 0;
     auto start = std::chrono::system_clock::now();
     auto end = std::chrono::system_clock::now();
@@ -76,10 +76,12 @@ int main() {
         long id = stoll(str);
         getline(inFile, str);
         tj.loadFromString(str);
-
-        tb.cvt_greedy(tj);
-        tjs.emplace_back(tj);
-        tbs.emplace_back(tb);
+        MBR br = tj.getMBR();
+        if(br.intersects(r)) {
+            tb.cvt_greedy(tj);
+            tjs.emplace_back(tj);
+            tbs.emplace_back(tb);
+        }
         //cout<<tb.m_points.size()<<"\t"<<tb.m_tag<<endl;
     }
     cerr<<"tblock"<<endl;

@@ -7,6 +7,8 @@
 #include <stdint.h>
 #include <iostream>
 #include <cmath>
+//#include <geos_c.h>
+
 class Point
 {
     public:
@@ -21,17 +23,12 @@ class Point
     Point operator+ (const Point &b) const;
     Point operator- (const Point &b) const;
 
+//    bool inside(GEOSGeometry &g) const;
+
     //
     // ISerializable interface
     //
     virtual uint32_t getByteArraySize() const;
-
-    virtual void storeToByteArrayE(uint8_t** data, uint32_t& len);
-
-    virtual void makeInfinite(uint32_t dimension);
-    virtual void makeDimension(uint32_t dimension);
-
-    Point rotate(Point& center, double angle);
 
     public:
     double m_x,m_y;
@@ -42,7 +39,7 @@ class Point
         if(i==2) return m_t;
         return 0;
     }
-    static Point makemid(const Point &tp1,const Point &tp2,double t);
+    static Point makemid(const Point &tp1, const Point &tp2, double t);
     friend std::ostream& operator<<(std::ostream& os, const Point& pt);
 }; // Point
 
@@ -80,13 +77,9 @@ static inline bool lineIntersects(const Point &l1s, const Point &l1e, const Poin
     if (intersectsProper(l1s, l1e, l2s, l2e)) {
         return true;
     }
-    else if (between(l1s, l1e, l2s) || between(l1s, l1e, l2e) ||
-             between(l2s, l2e, l1s) || between(l2s, l2e, l1e) ) {
-        return true;
-    }
-    else {
-        return false;
-    }
+    else
+        return between(l1s, l1e, l2s) || between(l1s, l1e, l2e) ||
+               between(l2s, l2e, l1s) || between(l2s, l2e, l1e);
 }
 
 static inline Point makemid(const Point &p1, const Point &p2, double t){
@@ -106,7 +99,8 @@ static inline Point makemid(const Point &p1, const Point &p2, double t){
     for(int i=0;i<2;i++){
         p3c[i]=h2*p1c[i]+h1*p2c[i];
     }
-    auto res=Point(p3c[0],p3c[1],t);
+    auto res=Point(p3c[0], p3c[1], t);
     return res;
 }
+
 #endif //TBLOCK_POINT_H

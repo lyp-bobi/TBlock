@@ -7,6 +7,7 @@
 #include <limits>
 #include "Point.h"
 
+
 Point::Point(double x, double y, double t) {
     m_x=x;
     m_y=y;
@@ -37,16 +38,13 @@ Point& Point::operator=(const Point& p)
 
 bool Point::operator==(const Point& p) const
 {
-    if (
-            m_t < p.m_t - std::numeric_limits<double>::epsilon() ||
-            m_t > p.m_t + std::numeric_limits<double>::epsilon() ||
-            m_x < p.m_x - std::numeric_limits<double>::epsilon() ||
-            m_x > p.m_x + std::numeric_limits<double>::epsilon()||
-            m_y < p.m_y - std::numeric_limits<double>::epsilon() ||
-            m_y > p.m_y + std::numeric_limits<double>::epsilon())
-        return false;
+    return !(m_t < p.m_t - std::numeric_limits<double>::epsilon() ||
+             m_t > p.m_t + std::numeric_limits<double>::epsilon() ||
+             m_x < p.m_x - std::numeric_limits<double>::epsilon() ||
+             m_x > p.m_x + std::numeric_limits<double>::epsilon() ||
+             m_y < p.m_y - std::numeric_limits<double>::epsilon() ||
+             m_y > p.m_y + std::numeric_limits<double>::epsilon());
 
-    return true;
 }
 
 Point Point::operator+(const Point &b) const {
@@ -73,27 +71,7 @@ uint32_t Point::getByteArraySize() const
     return 3* sizeof(double);
 }
 
-void Point::storeToByteArrayE(uint8_t** data, uint32_t& len)
-{
-    len = getByteArraySize();
-    uint8_t* ptr = *data;
 
-    memcpy(ptr, &m_x, sizeof(double));
-    ptr += sizeof(double);
-    memcpy(ptr, &m_y, sizeof(double));
-    ptr += sizeof(double);
-    memcpy(ptr, &m_t, sizeof(double));
-//	ptr += sizeof(double);
-
-}
-
-void Point::makeInfinite(uint32_t dimension)
-{
-}
-
-void Point::makeDimension(uint32_t dimension)
-{
-}
 
 std::ostream& operator<<(std::ostream& os, const Point& pt)
 {
@@ -121,14 +99,13 @@ Point Point::makemid(const Point &p1, const Point &p2, double t){
     for(int i=0;i<2;i++){
         p3c[i]=h2*p1c[i]+h1*p2c[i];
     }
-    auto res=Point(p3c[0],p3c[1],t);
+    auto res=Point(p3c[0], p3c[1], t);
     return res;
 }
 
-Point Point::rotate(Point &center, double angle) {
-    Point delta = *this - center;
-    Point d2;
-    d2.m_x = delta.m_x * cos(angle) - delta.m_y * sin(angle);
-    d2.m_y = delta.m_x * sin(angle) + delta.m_y * cos(angle);
-    return center + d2;
-}
+//bool Point::inside(GEOSGeometry &g) const {
+//    GEOSGeometry *p = GEOSGeom_createPointFromXY(m_x, m_y);
+//    bool ret = GEOSIntersects(&g,p);
+//    free(p);
+//    return ret;
+//}

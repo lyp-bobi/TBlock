@@ -45,7 +45,7 @@ void Trajectory::loadFromString(std::string str) {
 }
 
 MBR Trajectory::getMBR() {
-    MBR res(1e30,-1e30,1e30,-1e30,1e30,-1e30);
+    MBR res(1e30, -1e30, 1e30, -1e30, 1e30, -1e30);
     for(int i=0;i<m_points.size();i++){
         res.combinePoint(m_points[i]);
     }
