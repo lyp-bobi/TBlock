@@ -91,6 +91,12 @@ bool Trajectory::passBy(MBR &r) {
     }
     int l = locateTime(0, m_points.size() - 1, r.m_tmin, -1),
             h = locateTime(l,m_points.size() -1,r.m_tmax,1);
+    for (int i = l; i <= h; i++) {
+        if (m_points[i].m_x >= r.m_xmin && m_points[i].m_x <= r.m_xmax
+            && m_points[i].m_y >= r.m_ymin && m_points[i].m_y <= r.m_ymax
+                )
+            return true;
+    }
     for (int i = l+1; i <= h; i++) {
         if(r.intersects(m_points[i-1], m_points[i]))
             return true;

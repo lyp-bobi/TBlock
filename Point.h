@@ -7,7 +7,7 @@
 #include <stdint.h>
 #include <iostream>
 #include <cmath>
-//#include <geos_c.h>
+#include <geos_c.h>
 
 class Point
 {
@@ -23,7 +23,7 @@ class Point
     Point operator+ (const Point &b) const;
     Point operator- (const Point &b) const;
 
-//    bool inside(GEOSGeometry &g) const;
+    bool inside(GEOSGeometry &g) const;
 
     //
     // ISerializable interface

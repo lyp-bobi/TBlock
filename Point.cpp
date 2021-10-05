@@ -103,9 +103,9 @@ Point Point::makemid(const Point &p1, const Point &p2, double t){
     return res;
 }
 
-//bool Point::inside(GEOSGeometry &g) const {
-//    GEOSGeometry *p = GEOSGeom_createPointFromXY(m_x, m_y);
-//    bool ret = GEOSIntersects(&g,p);
-//    free(p);
-//    return ret;
-//}
+bool Point::inside(GEOSGeometry &g) const {
+    GEOSGeometry *p = GEOSGeom_createPointFromXY(m_x, m_y);
+    bool ret = GEOSIntersects(&g,p);
+    free(p);
+    return ret;
+}

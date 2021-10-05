@@ -2,6 +2,7 @@ ip1=$1":~/tblock/"
 
 echo $ip1
 rsync -v ./* ${ip1}
+rsync -rv ./cmake ${ip1}/
 
 ssh $1 "mkdir ~/tblock;mkdir ~/run;mkdir ~/build/tblock"
 ssh $1 "rm ~/build/tblock/CMakeCache.txt"

@@ -6,10 +6,10 @@ set(CMAKE_CXX_STANDARD 14)
 AUX_SOURCE_DIRECTORY(. SRC)
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
 
-#find_package(GEOS REQUIRED)
+find_package(GEOS REQUIRED)
 
-FIND_PATH(GEOS_INCLUDE_DIR geos_c.h "$ENV{LIB_DIR}/include" /usr/local/include /usr/include C:/GEOS/include)
-FIND_LIBRARY(GEOS_LIBRARY NAMES geos_c PATHS "$ENV{LIB_DIR}/lib" /usr/local/lib /usr/lib C:/GEOS/lib)
+#FIND_PATH(GEOS_INCLUDE_DIR geos_c.h "$ENV{LIB_DIR}/include" /usr/local/include /usr/include C:/GEOS/include)
+#FIND_LIBRARY(GEOS_LIBRARY NAMES geos_c PATHS "$ENV{LIB_DIR}/lib" /usr/local/lib /usr/lib C:/GEOS/lib)
 
 
 include_directories(${GEOS_INCLUDE_DIR})
