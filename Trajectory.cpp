@@ -41,6 +41,7 @@ void Trajectory::loadFromString(std::string str) {
     }
     if (m_points.size() > 1 && m_points.front().m_t >= m_points.back().m_t) {
         m_points.clear();
+        throw std::logic_error("");
     }
 }
 

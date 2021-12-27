@@ -9,6 +9,7 @@
 #include <string>
 #include "MBR.h"
 #include "chrono"
+#include <memory>
 extern double timer_traj;
 
 class Trajectory{
@@ -16,6 +17,11 @@ public:
     std::vector<Point> m_points;
 
     std::string toString() const ;
+    Trajectory(){};
+    Trajectory(std::vector<Point>& in)
+    {
+        m_points=in;
+    }
     void loadFromString(std::string s);
     MBR getMBR();
 
