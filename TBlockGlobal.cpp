@@ -54,7 +54,7 @@ using namespace std;
  * @param nbox number of boxes to use
  * @return v[i] is the minimum cost using i boxes
  */
-vector<double> OPTcostGlobal(vector<Trajectory> &tjs, int nbox)
+vector<double> OPTcostGlobal(vector<Trajectory> &tjs, int nbox, BEnable ena)
 {
     /*
      * |one traj| one box| two box|...
@@ -75,7 +75,7 @@ vector<double> OPTcostGlobal(vector<Trajectory> &tjs, int nbox)
     for(int i = 1;i<= tjs.size();i++) // i is the number of trajs
     {
         int premaxbox = maxboxes;
-        vector<double> curcost = OPTcost(tjs[i-1]);
+        vector<double> curcost = OPTcost(tjs[i-1], ena);
         int curnp = tjs[i-1].m_points.size();
         maxboxes+= curnp-1;
         maxboxes = min(maxboxes, nbox);

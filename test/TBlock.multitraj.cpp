@@ -11,6 +11,9 @@ int main()
 {
     vector<Trajectory> trajs;
     trajs = loadDumpedFiledToTrajs("D://TBlock/dumpedtraj.txt");
-    OPTcostGlobal(trajs, 100);
+    BEnable ena;
+    ena.enable[T_block1] = true;
+    ena.enable[T_block2] = true;
+    auto s = OPTcostGlobal(trajs, 100, ena);
     return 0;
 }

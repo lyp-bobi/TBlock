@@ -1,6 +1,5 @@
 
 set (SOURCES
-#        main
         TBlock.onetraj
         TBlock.multitraj
         )
