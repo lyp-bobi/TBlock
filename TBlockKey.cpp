@@ -63,7 +63,7 @@ BSize blockSize(Trajectory &tj, int a, int b, BEnable ena)
         a=b;
         b=tmp;
     }
-    BSize size;
+    BSize size = {1e300,1e300, 1e300,1e300};
 
     //box1
     double xmin=0,xmax=0, ymin=0, ymax=0;
@@ -80,8 +80,9 @@ BSize blockSize(Trajectory &tj, int a, int b, BEnable ena)
             if(ymax < tj.m_points[i].m_y)
                 ymax = tj.m_points[i].m_y;
         }
+        size.size[T_box1] = (xmax - xmin)*(ymax-ymin);
     }
-    size.size[T_box1] = (xmax - xmin)*(ymax-ymin);
+
 
     // box2
     double umin=0,umax=0, vmin=0, vmax=0;
@@ -100,8 +101,9 @@ BSize blockSize(Trajectory &tj, int a, int b, BEnable ena)
             if(vmax < v)
                 vmax = v;
         }
+        size.size[T_box2] = (umax - umin)*(vmax-vmin)/2;
     }
-    size.size[T_box2] = (umax - umin)*(vmax-vmin)/2;
+
 
     //block1
     if(ena.enable[T_block1]) {
@@ -147,7 +149,7 @@ vector<double> OPTcost(Trajectory &tj, BEnable ena)
         }
         i++;
     }
-    BSize s;
+    BSize s = {1e300,1e300, 1e300,1e300};;
     for(i=1;i<tj.m_points.size();i++) {// last id of points
         for(k=1;k<=i;k++) { // num of boxes
             if(k==1){
@@ -193,7 +195,7 @@ TBlockKey OPTBlock(Trajectory &tj, int nbox, BEnable ena)
         }
         i++;
     }
-    BSize s;
+    BSize s = {1e300,1e300, 1e300,1e300};;
     for(i=1;i<tj.m_points.size();i++) {// num of point
         for(k=1;k<=std::min(i,nbox);k++) { // num of boxes
             if(k==1){

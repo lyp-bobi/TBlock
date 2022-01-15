@@ -36,7 +36,7 @@ static vector<Trajectory> loadDumpedFiledToTrajs(string filename) {
     Trajectory tj;
 //    tjstat->fromString(lineStr);
     int curLine = 0;
-    while (getline(inFile, lineStr) && curLine < 10) {
+    while (getline(inFile, lineStr) && curLine < 1) {
         try {
             string str;
             stringstream ss(lineStr);
