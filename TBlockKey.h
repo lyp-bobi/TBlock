@@ -5,6 +5,7 @@
 #ifndef TBLOCK_TBLOCKKEY_H
 #define TBLOCK_TBLOCKKEY_H
 #include <vector>
+#include <sstream>
 #include "Trajectory.h"
 
 
@@ -36,11 +37,31 @@ struct TBlockRouteEntry{
     int m_ps;
     int m_pe;
     BType m_type;
+    TBlockRouteEntry(int ps, int pe, BType type)
+    :m_ps(ps), m_pe(pe), m_type(type)
+    {}
+//    TBlockRouteEntry& operator=(TBlockRouteEntry& r)
+//    {
+//        m_ps = r.m_ps;
+//        m_pe = r.m_pe;
+//        m_type = r. m_type;
+//    }
 };
 
 struct TBlockRoute{
     std::vector<TBlockRouteEntry> m_route;
     double cost;
+public:
+    std::string toString()
+    {
+        std::ostringstream ss;
+        for(auto &e: m_route)
+        {
+            ss<<e.m_ps<<","<<e.m_pe<<","<<e.m_type<<"\t";
+        }
+        ss<< cost;
+        return ss.str();
+    }
 };
 
 struct BEnable{
@@ -55,7 +76,7 @@ public:
 
 extern TBlockKey OPTBlock(Trajectory &tj, int nbox);
 
-extern std::vector<double> OPTcost(Trajectory &tj, BEnable ena);
+extern std::vector<TBlockRoute> OPTcost(Trajectory &tj, BEnable ena);
 
 extern std::vector<double> OPTcostGlobal(std::vector<Trajectory> &tjs, int nbox, BEnable ena);
 

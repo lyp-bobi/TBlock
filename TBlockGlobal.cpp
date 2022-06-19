@@ -65,14 +65,14 @@ vector<double> OPTcostGlobal(vector<Trajectory> &tjs, int nbox, BEnable ena)
     cost.resize(tjs.size()+1);
     int maxboxes = 0;
     int realmaxbox = 0;
-    for(int i = 1;i<= tjs.size();i++) // i is the number of trajs
+    for(int i = 1;i <= tjs.size(); i++) // i is the number of trajs
     {
-        maxboxes+= tjs[i-1].m_points.size()-1;
+        maxboxes += tjs[i-1].m_points.size()-1;
         realmaxbox += tjs[i-1].m_points.size()-1;
         maxboxes = min(maxboxes, nbox);
         cost[i].resize(maxboxes+1);
         for(int j = 0;j<=maxboxes;j++)
-            cost[i][j]=1e300;
+            cost[i][j] = 1e300;
     }
     std::cout<<"maxboxes"<<realmaxbox<<"\n";
     maxboxes = 0;
@@ -80,9 +80,9 @@ vector<double> OPTcostGlobal(vector<Trajectory> &tjs, int nbox, BEnable ena)
     {
         std::cout<<"processing traj number "<<i<<"\n";
         int premaxbox = maxboxes;
-        vector<double> curcost = OPTcost(tjs[i-1], ena);
+        vector<TBlockRoute> curcost = OPTcost(tjs[i-1], ena);
         int curnp = tjs[i-1].m_points.size();
-        maxboxes+= curnp-1;
+        maxboxes += curnp-1;
         maxboxes = min(maxboxes, nbox);
         for(int j = i;j<=maxboxes;j++) // j is the number of boxes
         {
@@ -90,9 +90,9 @@ vector<double> OPTcostGlobal(vector<Trajectory> &tjs, int nbox, BEnable ena)
             {
                 double value;
                 if(k==0)
-                    value = curcost[j-k];
+                    value = curcost[j-k].cost;
                 else
-                    value = cost[i-1][k] + curcost[j-k];
+                    value = cost[i-1][k] + curcost[j-k].cost;
                 cost[i][j] = min(cost[i][j], value);
             }
         }
