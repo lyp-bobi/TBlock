@@ -171,6 +171,88 @@ vector<double> OPTcost(Trajectory &tj, BEnable ena)
     return dmat.back();
 }
 
+vector<double> Greedycost(Trajectory &tj, BEnable ena)
+{
+    int startloc=0;
+    double x, y;
+    double u, v;
+    double cost = 0;
+
+    bool xyena = ena.enable[T_block1], uvena = ena.enable[T_block2];
+    int directionx = 0, directiony = 0; //-1 is decrease, 0 is unknown, 1 is increase
+    int directionu = 0, directionv = 0; //-1 is decrease, 0 is unknown, 1 is increase
+    for (int i = 0; i < tj.m_points.size(); i++) {
+        if (i == 0) {
+            x = tj.m_points[i].m_x;
+            y = tj.m_points[i].m_y;
+            u = x+y;
+            v = x-y;
+            directionx = 0;
+            directiony = 0;
+            continue;
+        }
+        double newx = tj.m_points[i].m_x, newy = tj.m_points[i].m_y,
+                newu = newx+newy, newv = newx - newy;
+        if(xyena) {
+            if (
+                    (directionx == 1 && newx < x)
+                    || (directionx == -1 && newx > x)
+                    || (directiony == 1 && newy < y)
+                    || (directiony == -1 && newy > y)
+                    ) {
+                xyena = false;
+                directionx = 0;
+                directiony = 0;
+            }
+            if (directionx == 0) {
+                if (newx > x) directionx = 1;
+                else if (newx < x) directionx = -1;
+            }
+            if (directiony == 0) {
+                if (newy > y) directiony = 1;
+                else if (newy < y) directiony = -1;
+            }
+            x = newx;
+            y = newy;
+        }
+        if(uvena) {
+            if (
+                    (directionu == 1 && newu < u)
+                    || (directionu == -1 && newu > u)
+                    || (directionv == 1 && newv < v)
+                    || (directionv == -1 && newv > v)
+                    ) {
+                uvena = false;
+                directionu = 0;
+                directionv = 0;
+            }
+            if (directionu == 0) {
+                if (newu > u) directionu = 1;
+                else if (newu < u) directionu = -1;
+            }
+            if (directionv == 0) {
+                if (newv > v) directionv = 1;
+                else if (newv < v) directionv = -1;
+            }
+            u = newu;
+            v = newv;
+        }
+        if(!xyena && !uvena)
+        {
+            x = tj.m_points[i - 1].m_x;
+            y = tj.m_points[i - 1].m_y;
+            u = x+y;
+            v = x-y;
+            cost += minSize(blockSize(tj,startloc,i-1, ena));
+            startloc = i-1;
+        }
+        if (i == tj.m_points.size() - 1) {
+            cost += minSize(blockSize(tj,startloc,i, ena));
+        }
+    }
+}
+
+
 
 TBlockKey OPTBlock(Trajectory &tj, int nbox, BEnable ena)
 {

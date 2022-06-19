@@ -31,10 +31,16 @@ int main()
     ena.enable[T_block2] = false;
     auto p = OPTcostGlobal(trajs, 100, ena);
 
+    ena.enable[T_box1] = true;
+    ena.enable[T_box2] = true;
+    ena.enable[T_block1] = true;
+    ena.enable[T_block2] = true;
+    auto a = OPTcostGlobal(trajs, 100, ena);
+
 
     for(int i = 0;i<50;i++)
     {
-        cout<<i<<"\t"<<o[i]<<"\t"<<s[i]<<"\t"<<p[i]<<"\n";
+        cout<<i<<"\t"<<o[i]<<"\t"<<s[i]<<"\t"<<p[i]<<"\t"<<a[i]<<"\n";
     }
     return 0;
 }

@@ -16,11 +16,6 @@ public:
     std::vector<Point> m_pts;
 };
 
-enum TBlockLossType{
-    LOSS_AREA,
-    LOSS_VOLUME,
-    LOSS_QUERY
-};
 
 enum BType{
     T_box1 = 0,
@@ -30,8 +25,26 @@ enum BType{
     T_end
 };
 
+
+enum TBlockLossType{
+    LOSS_AREA,
+    LOSS_VOLUME,
+    LOSS_QUERY
+};
+
+struct TBlockRouteEntry{
+    int m_ps;
+    int m_pe;
+    BType m_type;
+};
+
+struct TBlockRoute{
+    std::vector<TBlockRouteEntry> m_route;
+    double cost;
+};
+
 struct BEnable{
-    bool enable[T_end]={false,false,false,false};
+    bool enable[T_end]={false, false, false, false};
 };
 
 class BSize{
