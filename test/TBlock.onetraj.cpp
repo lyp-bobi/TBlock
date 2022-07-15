@@ -15,8 +15,10 @@ int main()
 //    auto a = OPTcost(tj, ena);
 //    std::cout<<a.back().toString()<<std::endl;
 
-    tj.loadFromString("1,1,1 4,4,2 4,4,4 8,8,8 9,9,9 10,10,10");
-    auto c= OPTcost(tj,ena);
+//    tj.loadFromString("1,1,1 4,4,2 4,4,4 8,8,8 9,9,9 10,10,10");
+    auto c = OPTcost(tj,ena);
+    auto d = GreedyPath(tj,ena);
+    auto e = GreedyPathElite(tj,ena, 5);
     std::cout<<c[2].toString()<<std::endl;
     return 0;
 }

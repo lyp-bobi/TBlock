@@ -129,7 +129,7 @@ BSize blockSize(Trajectory &tj, int a, int b, BEnable ena) {
     return size;
 }
 
-vector<TBlockRoute> OPTcost(Trajectory &tj, BEnable ena) {
+vector<TBlockRoute> OPTcost(Trajectory &tj, BEnable ena, int numbox) {
     /*
      * DP table
      * |the first point| using one box| using two box | ...
@@ -147,22 +147,23 @@ vector<TBlockRoute> OPTcost(Trajectory &tj, BEnable ena) {
     }
     BSize s = {1e300, 1e300, 1e300, 1e300};;
     for (i = 1; i < tj.m_points.size(); i++) {// last id of points
-        for (k = 1; k <= i; k++) { // num of boxes
+        for (k = 1; k <= std::min(i, numbox); k++) { // num of boxes
             if (k == 1) {
                 j = 0;
                 s = blockSize(tj, i, j, ena);
-                dmat[i][k].m_route.emplace_back(TBlockRouteEntry(j,i,minType(s)));
+                dmat[i][k].m_route.emplace_back(
+                        TBlockRouteEntry(j, i, minType(s), s));
                 dmat[i][k].cost = minSize(s);
             } else {
                 for (j = 0; j < i; j++) { //last chosen point
                     if (j >= k - 1) {
                         s = blockSize(tj, i, j, ena);
                         double value = dmat[j][k - 1].cost + minSize(s);
-                        if(dmat[i][k].cost > value)
-                        {
+                        if (dmat[i][k].cost > value) {
                             dmat[i][k].cost = value;
-                            dmat[i][k].m_route = dmat[j][k-1].m_route;
-                            dmat[i][k].m_route.emplace_back(TBlockRouteEntry(j,i,minType(s)));
+                            dmat[i][k].m_route = dmat[j][k - 1].m_route;
+                            dmat[i][k].m_route.emplace_back(
+                                    TBlockRouteEntry(j, i, minType(s), s));
                         }
                     }
                 }
@@ -172,11 +173,11 @@ vector<TBlockRoute> OPTcost(Trajectory &tj, BEnable ena) {
     return dmat.back();
 }
 
-vector<double> Greedycost(Trajectory &tj, BEnable ena) {
+TBlockRoute GreedyPath(Trajectory &tj, BEnable ena) {
     int startloc = 0;
     double x, y;
     double u, v;
-    double cost = 0;
+    TBlockRoute res;
 
     bool xyena = ena.enable[T_block1], uvena = ena.enable[T_block2];
     int directionx = 0, directiony = 0; //-1 is decrease, 0 is unknown, 1 is increase
@@ -242,13 +243,84 @@ vector<double> Greedycost(Trajectory &tj, BEnable ena) {
             y = tj.m_points[i - 1].m_y;
             u = x + y;
             v = x - y;
-            cost += minSize(blockSize(tj, startloc, i - 1, ena));
+            BSize s = blockSize(tj, startloc, i - 1, ena);
+            res.m_route.emplace_back(
+                    TBlockRouteEntry(startloc, i - 1, minType(s), s));
+            res.cost += minSize(s);
             startloc = i - 1;
         }
         if (i == tj.m_points.size() - 1) {
-            cost += minSize(blockSize(tj, startloc, i, ena));
+            BSize s = blockSize(tj, startloc, i, ena);
+            res.m_route.emplace_back(
+                    TBlockRouteEntry(startloc, i, minType(s), s));
+            res.cost += minSize(s);
         }
     }
+    return res;
+}
+
+#include <queue>
+
+std::tuple<int, BSize, BSize>
+picksplitpoint(Trajectory &tj, int s, int e, BEnable ena) {
+    double size = 1e300;
+    int mini;
+    BSize bests1, bests2;
+    for (int i = s + 1; i < e; i++) {
+        BSize s1 = blockSize(tj, s, i, ena);
+        BSize s2 = blockSize(tj, i, e, ena);
+        double d = minSize(s1) + minSize(s2);
+        if (d < size) {
+            mini = i;
+            bests1 = s1;
+            bests2 = s2;
+        }
+    }
+    return std::make_tuple(mini, bests1, bests2);
+}
+
+TBlockRoute GreedyPathElite(Trajectory &tj, BEnable ena, int numseg) {
+    auto greed = GreedyPath(tj, ena);
+    if (numseg <= greed.m_route.size())
+        return greed;
+    std::priority_queue<TBlockRouteEntry, vector<TBlockRouteEntry>, TBlockRouteEntry::TBRE_cmp_size> pq;
+    for (auto &s:greed.m_route) {
+        pq.push(s);
+    }
+    auto top = pq.top();
+    pq.pop();
+    if (top.m_pe.m_plast - top.m_ps.m_plast > 1) {
+        auto s = picksplitpoint(tj, top.m_ps.m_plast, top.m_pe.m_plast, ena);
+        pq.push(TBlockRouteEntry(top.m_ps, std::get<0>(s),
+                                 minType(std::get<1>(s)), std::get<1>(s)));
+        pq.push(TBlockRouteEntry(std::get<0>(s), top.m_pe,
+                                 minType(std::get<2>(s)), std::get<2>(s)));
+    } else {
+        IntRange mid = top.m_ps;
+        mid.m_ratio =
+                (top.m_ps.m_ratio + top.m_pe.m_ratio == 0 ? 1 : top.m_pe.m_ratio)/2;
+        BSize msize = top.m_size;
+        msize.size[0] /= 4;
+        msize.size[1] /= 4;
+        msize.size[2] /= 4;
+        msize.size[3] /= 4;
+        pq.push(TBlockRouteEntry(top.m_ps, mid, top.m_type, msize));
+        pq.push(TBlockRouteEntry(mid, top.m_pe, top.m_type, msize));
+    }
+    std::priority_queue<TBlockRouteEntry, vector<TBlockRouteEntry>, TBlockRouteEntry::TBRE_cmp_ps> sortpq;
+    while(!pq.empty())
+    {
+        sortpq.push(pq.top());
+        pq.pop();
+    }
+    TBlockRoute res;
+    while(!sortpq.empty())
+    {
+        res.m_route.emplace_back(sortpq.top());
+        res.cost += sortpq.top().m_size.size[sortpq.top().m_type];
+        sortpq.pop();
+    }
+    return res;
 }
 
 

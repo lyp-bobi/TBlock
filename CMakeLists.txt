@@ -12,8 +12,8 @@ set(CMAKE_CXX_STANDARD 14)
 
 include_directories(.)
 
-add_subdirectory(sqlite)
-include_directories(sqlite)
+#add_subdirectory(sqlite)
+#include_directories(sqlite)
 #include_directories(${GEOS_INCLUDE_DIR})
 
 aux_source_directory(. SRC)

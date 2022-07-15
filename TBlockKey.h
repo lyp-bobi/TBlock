@@ -8,6 +8,7 @@
 #include <sstream>
 #include "Trajectory.h"
 
+#include <TBlock_c.h>
 
 
 class TBlockKey{
@@ -17,15 +18,16 @@ public:
     std::vector<Point> m_pts;
 };
 
-
-enum BType{
-    T_box1 = 0,
-    T_box2,
-    T_block1,
-    T_block2,
-    T_end
+struct IntRange{
+    int m_plast;
+    double m_ratio = 0;
+    IntRange(int i):m_plast(i),m_ratio(0){};
 };
 
+class BSize{
+public:
+    double size[T_end]={1e300,1e300,1e300,1e300};
+};
 
 enum TBlockLossType{
     LOSS_AREA,
@@ -34,12 +36,28 @@ enum TBlockLossType{
 };
 
 struct TBlockRouteEntry{
-    int m_ps;
-    int m_pe;
+    IntRange m_ps;
+    IntRange m_pe;
     BType m_type;
-    TBlockRouteEntry(int ps, int pe, BType type)
-    :m_ps(ps), m_pe(pe), m_type(type)
+    BSize m_size;
+
+    TBlockRouteEntry(IntRange ps, IntRange pe, BType type, BSize s)
+    :m_ps(ps), m_pe(pe), m_type(type), m_size(s)
     {}
+
+    struct TBRE_cmp_size{
+        bool operator()(TBlockRouteEntry &a, TBlockRouteEntry &b)
+        {
+            return a.m_size.size[a.m_type]< b.m_size.size[b.m_type];
+        }
+    };
+    struct TBRE_cmp_ps{
+        bool operator()(TBlockRouteEntry &a, TBlockRouteEntry &b)
+        {
+            if(a.m_ps.m_plast==b.m_ps.m_plast) return a.m_ps.m_ratio > b.m_ps.m_ratio;
+            return a.m_ps.m_plast > b.m_ps.m_plast;
+        }
+    };
 //    TBlockRouteEntry& operator=(TBlockRouteEntry& r)
 //    {
 //        m_ps = r.m_ps;
@@ -57,27 +75,24 @@ public:
         std::ostringstream ss;
         for(auto &e: m_route)
         {
-            ss<<e.m_ps<<","<<e.m_pe<<","<<e.m_type<<"\t";
+            ss<<e.m_ps.m_plast<<","<<e.m_pe.m_plast<<","<<e.m_type<<"\t";
         }
         ss<< cost;
         return ss.str();
     }
 };
 
-struct BEnable{
-    bool enable[T_end]={false, false, false, false};
-};
-
-class BSize{
-public:
-    double size[T_end]={1e300,1e300,1e300,1e300};
-};
 
 
-extern TBlockKey OPTBlock(Trajectory &tj, int nbox);
 
-extern std::vector<TBlockRoute> OPTcost(Trajectory &tj, BEnable ena);
+extern TBlockKey OPTBlock(Trajectory &tj, int nbox, BEnable ena);
+
+extern std::vector<TBlockRoute> OPTcost(Trajectory &tj, BEnable ena,int numbox = 1e9);
 
 extern std::vector<double> OPTcostGlobal(std::vector<Trajectory> &tjs, int nbox, BEnable ena);
+
+TBlockRoute GreedyPath(Trajectory &tj, BEnable ena);
+
+TBlockRoute GreedyPathElite(Trajectory &tj, BEnable ena, int numseg);
 
 #endif //TBLOCK_TBLOCKKEY_H
