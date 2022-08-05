@@ -7,6 +7,8 @@
 
 #include <cstdint>
 
+#include <postgres.h>
+
 /*  POINTARRAY
         *  Point array abstracts a lot of the complexity of points and point lists.
 *  It handles 2d/3d translation
@@ -37,11 +39,16 @@ struct BEnable{
     bool enable[T_end]={false, false, false, false};
 };
 
+
 extern "C"{
     POINTARRAY** tbox_opt_multi(POINTARRAY **traj, int numseg);
     POINTARRAY* tbox_opt(POINTARRAY *traj, int numseg);
     POINTARRAY* tblock_opt(POINTARRAY *traj, int numseg);
     POINTARRAY* tblock_greedy(POINTARRAY *traj, int numseg);
+
+    varlena tbox_opt_to_binary(POINTARRAY *traj, int numseg);
+    varlena tblock_opt_to_binary(POINTARRAY *traj, int numseg);
+    varlena tblock_greedy_to_binary(POINTARRAY *traj, int numseg);
 };
 
 
