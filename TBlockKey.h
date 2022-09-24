@@ -18,12 +18,6 @@ public:
     std::vector<Point> m_pts;
 };
 
-struct IntRange{
-    int m_plast;
-    double m_ratio = 0;
-    IntRange(int i):m_plast(i),m_ratio(0){};
-};
-
 class BSize{
 public:
     double size[T_end]={1e300,1e300,1e300,1e300};

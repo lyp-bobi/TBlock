@@ -104,3 +104,11 @@ bool Trajectory::passBy(MBR &r) {
     }
     return false;
 }
+
+Point Trajectory::operator[](IntRange r)
+{
+    double x = m_points[r.m_plast].m_x * (1-r.m_ratio) + m_points[r.m_plast+1].m_x * r.m_ratio;
+    double y = m_points[r.m_plast].m_y * (1-r.m_ratio) + m_points[r.m_plast+1].m_y * r.m_ratio;
+    double t = m_points[r.m_plast].m_t * (1-r.m_ratio) + m_points[r.m_plast+1].m_t * r.m_ratio;
+    return Point(x,y,t);
+}

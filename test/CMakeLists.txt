@@ -2,6 +2,7 @@
 set (SOURCES
         TBlock.onetraj
         TBlock.multitraj
+        TestBound
         )
 aux_source_directory(../ POJ_SRC)
 

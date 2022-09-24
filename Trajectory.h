@@ -12,6 +12,12 @@
 #include <memory>
 extern double timer_traj;
 
+struct IntRange{
+    int m_plast;
+    double m_ratio = 0;
+    IntRange(int i):m_plast(i),m_ratio(0){};
+};
+
 class Trajectory{
 public:
     std::vector<Point> m_points;
@@ -23,6 +29,9 @@ public:
         m_points=in;
     }
     void loadFromString(std::string s);
+
+    Point operator[](IntRange r);
+
     MBR getMBR();
 
     int locateTime(int l,int h, double time, int dir);
