@@ -17,7 +17,7 @@ int main()
     ena.enable[T_block2] = true;
     arr = tj.asptarray();
     BOUNDPRODUCER prod(arr);
-    prod.produce_tbox_list(1);
+//    prod.produce_tbox_list(1);
     prod.produce_tbox_list(5);
     prod.produce_tbox_list(10);
     prod.produce_tblock_list(1);

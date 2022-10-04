@@ -18,6 +18,10 @@ BOUNDLIST* BOUNDPRODUCER::produce_tbox_list(int numseg)
         t.m_points.emplace_back(
                 Point(dlist[2 * i], dlist[2 * i + 1], i));
     }
+    if(t.m_points.size() < numseg)
+    {
+        t.resample(numseg+1);
+    }
     BEnable ena = {true, false, false, false};
     TBlockRoute c = OPTcost(t, ena, numseg)[numseg];
     BOUNDLIST *res = static_cast<BOUNDLIST *>(malloc(
@@ -43,6 +47,10 @@ BOUNDLIST* BOUNDPRODUCER::produce_tblock_list(int numseg)
     for (int i = 0; i < m_ptarray->npoints; i++) {
         t.m_points.emplace_back(
                 Point(dlist[2 * i], dlist[2 * i + 1], i));
+    }
+    if(t.m_points.size() < numseg)
+    {
+        t.resample(numseg+1);
     }
     BEnable ena = {false, false, true, true};
     TBlockRoute c = OPTcost(t, ena, numseg)[numseg];

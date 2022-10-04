@@ -33,6 +33,8 @@ public:
 
     POINTARRAY *asptarray();
 
+    void resample(int numseg);
+
     Point operator[](IntRange r);
 
     MBR getMBR();

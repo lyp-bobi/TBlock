@@ -30,6 +30,11 @@ class Point
     //
     virtual uint32_t getByteArraySize() const;
 
+    double getDistance(Point &p)
+    {
+        return std::sqrt((m_x-p.m_x)*(m_x-p.m_x) + (m_y-p.m_y)*(m_y-p.m_y));
+    }
+
     public:
     double m_x,m_y;
     double m_t;

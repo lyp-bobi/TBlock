@@ -3,6 +3,8 @@
 //
 
 #include "Trajectory.h"
+#include <queue>
+#include <map>
 double timer_traj = 0;
 
 std::vector<std::string> split(const std::string &strtem, char a) {
@@ -127,4 +129,42 @@ POINTARRAY * Trajectory::asptarray() {
         data[cur++] = p.m_y;
     }
     return res;
+}
+
+void Trajectory::resample(int numseg) {
+    if(numseg > m_points.size())
+    {
+        int point_add = numseg - m_points.size();
+        std::priority_queue<std::tuple<double, int, int>, std::vector<std::tuple<double, int, int>>, std::greater<std::tuple<double, int, int>>> queue;
+        for(int i=0;i<m_points.size() -1 ;i++)
+        {
+            queue.push(std::make_tuple(m_points[i+1].getDistance(m_points[i]),1,i));
+        }
+        std::map<int,int> inserted;
+        for(int j =0;j<point_add;j++)
+        {
+            auto t = queue.top();
+            queue.pop();
+            queue.push(std::make_tuple(
+                    std::get<0>(t)*std::get<1>(t) / (std::get<1>(t)+1)
+                            ,std::get<1>(t)+1
+                                    , std::get<2>(t)));
+            inserted[std::get<2>(t)] = std::get<1>(t)+1;
+        }
+        std::vector<Point> res;
+        for(int i=0;i<m_points.size();i++)
+        {
+            if(inserted.find(i) == inserted.end())
+            {
+                res.emplace_back(m_points[i]);
+            } else{
+                for(int j =0; j < inserted[i];j++)
+                {
+                    double ratio = 1.0*j/inserted[i];
+                    res.emplace_back(makemid(m_points[i], m_points[i+1], m_points[i].m_t * (1 - ratio)+m_points[i+1].m_t*ratio));
+                }
+            }
+        }
+        m_points.swap(res);
+    }
 }
