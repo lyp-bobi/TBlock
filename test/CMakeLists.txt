@@ -3,6 +3,7 @@ set (SOURCES
         TBlock.onetraj
         TBlock.multitraj
         TestBound
+        TestBoundProducer
         )
 aux_source_directory(../ POJ_SRC)
 

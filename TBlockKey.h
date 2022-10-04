@@ -79,7 +79,7 @@ public:
 
 
 
-extern TBlockKey OPTBlock(Trajectory &tj, int nbox, BEnable ena);
+//extern TBlockKey OPTBlock(Trajectory &tj, int nbox, BEnable ena);
 
 extern std::vector<TBlockRoute> OPTcost(Trajectory &tj, BEnable ena,int numbox = 1e9);
 

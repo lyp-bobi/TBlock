@@ -19,7 +19,7 @@ BOUNDLIST* BOUNDPRODUCER::produce_tbox_list(int numseg)
                 Point(dlist[2 * i], dlist[2 * i + 1], i));
     }
     BEnable ena = {true, false, false, false};
-    TBlockKey c = OPTBlock(t, numseg, ena);
+    TBlockRoute c = OPTcost(t, ena, numseg)[numseg];
     BOUNDLIST *res = static_cast<BOUNDLIST *>(malloc(
             sizeof(BOUNDLIST) + sizeof(BOUND) * numseg));
     res->BL_numbox = numseg;
@@ -29,10 +29,10 @@ BOUNDLIST* BOUNDPRODUCER::produce_tbox_list(int numseg)
     {
         see = (BOUND_BOX_2D*)&(res->BL_data[i]);
         res->BL_data->B_type = BT_box1;
-        see->xmin = std::min(c.m_pts[i].m_x, c.m_pts[i+1].m_x);
-        see->xmax = std::max(c.m_pts[i].m_x, c.m_pts[i+1].m_x);
-        see->ymin = std::min(c.m_pts[i].m_y, c.m_pts[i+1].m_y);
-        see->ymax = std::max(c.m_pts[i].m_y, c.m_pts[i+1].m_y);
+        see->xmin = std::min(t[c.m_route[i].m_ps].m_x, t[c.m_route[i].m_pe].m_x);
+        see->xmax = std::max(t[c.m_route[i].m_ps].m_x, t[c.m_route[i].m_pe].m_x);
+        see->ymin = std::min(t[c.m_route[i].m_ps].m_y, t[c.m_route[i].m_pe].m_y);
+        see->ymax = std::max(t[c.m_route[i].m_ps].m_y, t[c.m_route[i].m_pe].m_y);
     }
     return res;
 }

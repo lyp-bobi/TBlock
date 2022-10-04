@@ -10,6 +10,7 @@
 #include "MBR.h"
 #include "chrono"
 #include <memory>
+#include <postgis.h>
 extern double timer_traj;
 
 struct IntRange{
@@ -29,6 +30,8 @@ public:
         m_points=in;
     }
     void loadFromString(std::string s);
+
+    POINTARRAY *asptarray();
 
     Point operator[](IntRange r);
 

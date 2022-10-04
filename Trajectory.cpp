@@ -112,3 +112,19 @@ Point Trajectory::operator[](IntRange r)
     double t = m_points[r.m_plast].m_t * (1-r.m_ratio) + m_points[r.m_plast+1].m_t * r.m_ratio;
     return Point(x,y,t);
 }
+
+POINTARRAY * Trajectory::asptarray() {
+    POINTARRAY *res = static_cast<POINTARRAY *>(malloc(
+            sizeof(POINTARRAY)));
+    res->npoints = m_points.size();
+    res->maxpoints = res->npoints;
+    res->serialized_pointlist = (uint8_t*) malloc(2 * sizeof(double) * m_points.size());
+    double * data = (double*)(res->serialized_pointlist);
+    int cur = 0;
+    for(auto &p:m_points)
+    {
+        data[cur++]=p.m_x;
+        data[cur++] = p.m_y;
+    }
+    return res;
+}
