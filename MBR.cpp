@@ -2,7 +2,7 @@
 // Created by Chuang on 2021/6/3.
 //
 
-#include "MBR.h"
+#include "MBR.hpp"
 
 void MBR::combinePoint(Point &p) {
     m_xmin = std::min(m_xmin, p.m_x);

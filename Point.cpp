@@ -5,7 +5,7 @@
 
 #include <cstring>
 #include <limits>
-#include "Point.h"
+#include "Point.hpp"
 
 
 Point::Point(double x, double y, double t) {

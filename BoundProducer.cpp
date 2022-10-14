@@ -4,10 +4,11 @@
 #include <vector>
 #include <string>
 #include <sstream>
-#include <TBlockKey.h>
+#include <TBlockKey.hpp>
 
-#include <BoundProducer.h>
-using std::vector, std::string;
+#include <BoundProducer.hpp>
+using std::vector;
+using std::string;
 
 
 BOUNDLIST* BOUNDPRODUCER::produce_tbox_list(int numseg)

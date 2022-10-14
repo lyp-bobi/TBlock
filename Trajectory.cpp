@@ -2,7 +2,7 @@
 // Created by Chuang on 2021/6/2.
 //
 
-#include "Trajectory.h"
+#include "Trajectory.hpp"
 #include <queue>
 #include <map>
 double timer_traj = 0;
