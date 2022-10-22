@@ -66,7 +66,7 @@ public:
     }
     void loadFromString(std::string s);
 
-    POINTARRAY *asptarray();
+    POSTGIS_POINTARRAY *asptarray();
 
     void resample(int numseg);
 

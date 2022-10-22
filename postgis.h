@@ -21,5 +21,5 @@ typedef struct
     /* Array of POINT 2D, 3D or 4D, possibly misaligned. */
     uint8_t *serialized_pointlist;
 }
-        POINTARRAY;
+POSTGIS_POINTARRAY;
 #endif //TBLOCK_POSTGIS_H

@@ -115,9 +115,9 @@ Point Trajectory::operator[](IntRange r)
     return Point(x,y,t);
 }
 
-POINTARRAY * Trajectory::asptarray() {
-    POINTARRAY *res = static_cast<POINTARRAY *>(malloc(
-            sizeof(POINTARRAY)));
+POSTGIS_POINTARRAY * Trajectory::asptarray() {
+    POSTGIS_POINTARRAY *res = static_cast<POSTGIS_POINTARRAY *>(malloc(
+            sizeof(POSTGIS_POINTARRAY)));
     res->npoints = m_points.size();
     res->maxpoints = res->npoints;
     res->serialized_pointlist = (uint8_t*) malloc(2 * sizeof(double) * m_points.size());
