@@ -4,6 +4,9 @@
 
 #ifndef TBLOCK_TBLOCK_H
 #define TBLOCK_TBLOCK_H
+
+#include <stdbool.h>
+
 // type of boxes
 //
 typedef enum BOUNDTYPE{
@@ -55,12 +58,11 @@ typedef struct BOUNDLIST
     struct BOUND BL_data[]; //bounds
 }BOUNDLIST;
 
-typedef struct BOUNDLIST_BUFFER
+typedef struct BOUNDLIST_SERL
 {
     unsigned int BLB_size;
     char* BLB_data;
-}BOUNDLIST_BUFFER;
-
+}BOUNDLIST_SERL;
 
 #ifdef __cplusplus
 extern "C"
@@ -68,8 +70,10 @@ extern "C"
 #endif
 extern unsigned int boundlist_datalen_2d(BOUNDLISTTYPE type,unsigned int numbox);
 extern unsigned int boundlist_numbox_2d(BOUNDLISTTYPE type, unsigned int datalen);
-extern BOUNDLIST_BUFFER boundlist_serl_2d(BOUNDLIST* bl);
-extern BOUNDLIST* boundlist_deserl_2d(BOUNDLIST_BUFFER in);
+extern BOUNDLIST_SERL boundlist_serl_2d(BOUNDLIST* bl);
+extern BOUNDLIST* boundlist_deserl_2d(BOUNDLIST_SERL in);
+extern bool intersects_b_b(BOUND* a, BOUND *b);
+extern bool intersects_bl_b(BOUNDLIST* a, BOUND *b);
 #ifdef __cplusplus
 }
 #endif

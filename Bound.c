@@ -57,8 +57,8 @@ unsigned int boundlist_numbox_2d(BOUNDLISTTYPE type, unsigned int datalen) {
     }
 }
 
-BOUNDLIST_BUFFER boundlist_serl_2d(BOUNDLIST *bl) {
-    BOUNDLIST_BUFFER buf;
+BOUNDLIST_SERL boundlist_serl_2d(BOUNDLIST *bl) {
+    BOUNDLIST_SERL buf;
     buf.BLB_size = boundlist_datalen_2d(bl->BL_type, bl->BL_numbox);
     char *res = malloc(buf.BLB_size);
     buf.BLB_data = res;
@@ -97,7 +97,7 @@ BOUNDLIST_BUFFER boundlist_serl_2d(BOUNDLIST *bl) {
     return buf;
 }
 
-BOUNDLIST *boundlist_deserl_2d(BOUNDLIST_BUFFER in) {
+BOUNDLIST *boundlist_deserl_2d(BOUNDLIST_SERL in) {
     char *data = in.BLB_data;
     unsigned int datalen = in.BLB_size;
     BOUNDLISTTYPE type = data[SIZE_BLOCKLIST_PADDING];
@@ -142,4 +142,57 @@ BOUNDLIST *boundlist_deserl_2d(BOUNDLIST_BUFFER in) {
         break;
     }
     return bl;
+}
+#define min(a, b) ((a)<(b)?(a):(b))
+#define max(a, b) ((a)>(b)?(a):(b))
+bool intersects_b_b(BOUND* a, BOUND *b)
+{
+    if(a->B_type == BT_box1 && b->B_type == BT_box1)
+    {
+        BOUND_BOX_2D *b1 = a,*b2 =b;
+        if(b1->xmin>b2->xmax || b1->xmax<b2->xmin || b1->ymin>b2->ymax || b1->ymax<b2->ymin)
+            return false;
+        return true;
+    }
+    if(a->B_type == BT_block1 && b->B_type == BT_box1)
+    {
+        BOUND_BLOCK1_2D *b1 = a;
+        BOUND_BOX_2D *b2 = b;
+        double xmin = min(b1->xs,b1->xe), xmax = max(b1->xs,b1->xe),
+                ymin = min(b1->ys,b1->ye), ymax = max(b1->ys,b1->ye);
+        if(xmin>b2->xmax || xmax<b2->xmin || ymin>b2->ymax || ymax<b2->ymin)
+            return false;
+        return true;
+    }
+    if(a->B_type == BT_block2 && b->B_type == BT_box1)
+    {
+        BOUND_BLOCK2_2D *b1 = a;
+        BOUND_BOX_2D *b2 = b;
+        {
+            double sigma2 = (b1->xs + b1->xe + b1->ys + b1->ye) / 2;
+            double xmin = min(min(b1->xs, b1->xe),
+                              min(sigma2 - b1->xs, sigma2 - b1->xe)),
+                    xmax = max(max(b1->xs, b1->xe),
+                               max(sigma2 - b1->xs, sigma2 - b1->xe)),
+                    ymin = min(min(b1->ys, b1->ye),
+                               min(sigma2 - b1->ys, sigma2 - b1->ye)),
+                    ymax = max(max(b1->ys, b1->ye),
+                               max(sigma2 - b1->ys, sigma2 - b1->ye));
+            if (xmin > b2->xmax || xmax < b2->xmin || ymin > b2->ymax ||
+                ymax < b2->ymin)
+                return false;
+        }
+        {
+            double us = b1->xs + b1->ys, vs = b1->xs - b1->ys,
+                    ue = b1->xe + b1->ye, ve = b1->xe - b1->ye;
+            double umin1 = min(us, ue), umax1 = max(us, ue),
+                vmin1 = min(vs, ve), vmax1 = max(vs, ve);
+            double umin2 = b2->xmin+b2->ymin, umax2 = b2->xmax + b2->ymax,
+                vmin2 = b2->xmin - b2->ymax, vmax2 = b2->xmax - b2->ymin;
+            if (umin1 > umax2 || umin2 > umax1 || vmin1 > vmax2 || vmin2 > vmax1)
+                return false;
+        }
+        return true;
+
+    }
 }

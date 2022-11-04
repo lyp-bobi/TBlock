@@ -21,7 +21,7 @@ int main()
     a->BL_data[1].B_data[1] = 2;
     a->BL_data[1].B_data[2] = 4;
     a->BL_data[1].B_data[3] = 4;
-    BOUNDLIST_BUFFER buf = boundlist_serl_2d(a);
+    BOUNDLIST_SERL buf = boundlist_serl_2d(a);
     b = boundlist_deserl_2d(buf);
     a->BL_type = BLT_blocklist;
     a->BL_data[0].B_type = BT_block1;
