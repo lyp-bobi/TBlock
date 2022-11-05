@@ -19,7 +19,7 @@ BOUNDLIST* BOUNDPRODUCER::produce_tbox_list(int numseg)
         t.m_points.emplace_back(
                 Point(dlist[2 * i], dlist[2 * i + 1], i));
     }
-    if(t.m_points.size() < numseg)
+    if(t.m_points.size() <= numseg)
     {
         t.resample(numseg+1);
     }
@@ -49,7 +49,7 @@ BOUNDLIST* BOUNDPRODUCER::produce_tblock_list(int numseg)
         t.m_points.emplace_back(
                 Point(dlist[2 * i], dlist[2 * i + 1], i));
     }
-    if(t.m_points.size() < numseg)
+    if(t.m_points.size() <= numseg)
     {
         t.resample(numseg+1);
     }

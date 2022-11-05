@@ -5,6 +5,7 @@
 #include <Bound.h>
 #include <stdbool.h>
 #include <string.h>
+#include <float.h>
 
 #define SIZE_BLOCKLIST_PADDING (4) // for pg varsize
 #define SIZE_BLOCKLIST_FLAG (1)
@@ -102,9 +103,11 @@ BOUNDLIST *boundlist_deserl_2d(BOUNDLIST_SERL in) {
     unsigned int datalen = in.BLB_size;
     BOUNDLISTTYPE type = data[SIZE_BLOCKLIST_PADDING];
     int numbox = boundlist_numbox_2d(type, datalen);
-    BOUNDLIST *bl = malloc(sizeof(BOUNDLISTTYPE) + sizeof(BOUND) * numbox);
+    BOUNDLIST *bl = malloc(sizeof(BOUNDLIST) + sizeof(BOUND) * numbox);
     bl->BL_type = type;
     bl->BL_numbox = numbox;
+    bl->xmin = bl->ymin = FLT_MAX;
+    bl->xmax = bl->ymax = - FLT_MAX;
     switch (type) {
         case BLT_boxlist: {
             float *fltdata = (float*)(
@@ -116,6 +119,22 @@ BOUNDLIST *boundlist_deserl_2d(BOUNDLIST_SERL in) {
                 bl->BL_data[i].B_data[2] = fltdata[cur++];
                 bl->BL_data[i].B_data[3] = fltdata[cur++];
                 bl->BL_data[i].B_type = BT_box1;
+                if(bl->xmin > bl->BL_data[i].B_data[0])
+                {
+                    bl->xmin = bl->BL_data[i].B_data[0];
+                }
+                if(bl->xmax < bl->BL_data[i].B_data[1])
+                {
+                    bl->xmax = bl->BL_data[i].B_data[1];
+                }
+                if(bl->ymin > bl->BL_data[i].B_data[2])
+                {
+                    bl->ymin = bl->BL_data[i].B_data[2];
+                }
+                if(bl->ymax < bl->BL_data[i].B_data[3])
+                {
+                    bl->ymax = bl->BL_data[i].B_data[3];
+                }
             }
         }
         break;
@@ -130,14 +149,46 @@ BOUNDLIST *boundlist_deserl_2d(BOUNDLIST_SERL in) {
                 bl->BL_data[i].B_type = types[i] + BT_block1;
                 bl->BL_data[i].B_data[0] = fltdata[cur++];
                 bl->BL_data[i].B_data[1] = fltdata[cur++];
-                if(i!= 0)
+                if(i != 0)
                 {
                     bl->BL_data[i-1].B_data[2] = bl->BL_data[i].B_data[0];
                     bl->BL_data[i-1].B_data[3] = bl->BL_data[i].B_data[1];
                 }
+                if(bl->xmin > bl->BL_data[i].B_data[0])
+                {
+                    bl->xmin = bl->BL_data[i].B_data[0];
+                }
+                if(bl->xmax < bl->BL_data[i].B_data[0])
+                {
+                    bl->xmax = bl->BL_data[i].B_data[0];
+                }
+                if(bl->ymin > bl->BL_data[i].B_data[1])
+                {
+                    bl->ymin = bl->BL_data[i].B_data[1];
+                }
+                if(bl->ymax < bl->BL_data[i].B_data[1])
+                {
+                    bl->ymax = bl->BL_data[i].B_data[1];
+                }
             }
             bl->BL_data[bl->BL_numbox - 1].B_data[2] = fltdata[cur++];
             bl->BL_data[bl->BL_numbox - 1].B_data[3] = fltdata[cur++];
+            if(bl->xmin > bl->BL_data[bl->BL_numbox - 1].B_data[0])
+            {
+                bl->xmin = bl->BL_data[bl->BL_numbox - 1].B_data[0];
+            }
+            if(bl->xmax < bl->BL_data[bl->BL_numbox - 1].B_data[0])
+            {
+                bl->xmax = bl->BL_data[bl->BL_numbox - 1].B_data[0];
+            }
+            if(bl->ymin > bl->BL_data[bl->BL_numbox - 1].B_data[1])
+            {
+                bl->ymin = bl->BL_data[bl->BL_numbox - 1].B_data[1];
+            }
+            if(bl->ymax < bl->BL_data[bl->BL_numbox - 1].B_data[1])
+            {
+                bl->ymax = bl->BL_data[bl->BL_numbox - 1].B_data[1];
+            }
         }
         break;
     }
@@ -145,39 +196,39 @@ BOUNDLIST *boundlist_deserl_2d(BOUNDLIST_SERL in) {
 }
 #define min(a, b) ((a)<(b)?(a):(b))
 #define max(a, b) ((a)>(b)?(a):(b))
-bool intersects_b_b(BOUND* a, BOUND *b)
+bool intersects_b_b(const BOUND* a, const BOUND *b)
 {
     if(a->B_type == BT_box1 && b->B_type == BT_box1)
     {
-        BOUND_BOX_2D *b1 = a,*b2 =b;
+        BOUND_BOX_2D *b1 = (BOUND_BOX_2D*)a, *b2 = (BOUND_BOX_2D*)b;
         if(b1->xmin>b2->xmax || b1->xmax<b2->xmin || b1->ymin>b2->ymax || b1->ymax<b2->ymin)
             return false;
         return true;
     }
-    if(a->B_type == BT_block1 && b->B_type == BT_box1)
+    else if(a->B_type == BT_block1 && b->B_type == BT_box1)
     {
-        BOUND_BLOCK1_2D *b1 = a;
-        BOUND_BOX_2D *b2 = b;
+        BOUND_BLOCK1_2D *b1 = (BOUND_BLOCK1_2D*)a;
+        BOUND_BOX_2D *b2 = (BOUND_BOX_2D*)b;
         double xmin = min(b1->xs,b1->xe), xmax = max(b1->xs,b1->xe),
                 ymin = min(b1->ys,b1->ye), ymax = max(b1->ys,b1->ye);
         if(xmin>b2->xmax || xmax<b2->xmin || ymin>b2->ymax || ymax<b2->ymin)
             return false;
         return true;
     }
-    if(a->B_type == BT_block2 && b->B_type == BT_box1)
+    else if(a->B_type == BT_block2 && b->B_type == BT_box1)
     {
-        BOUND_BLOCK2_2D *b1 = a;
-        BOUND_BOX_2D *b2 = b;
+        BOUND_BLOCK2_2D *b1 = (BOUND_BLOCK2_2D*)a;
+        BOUND_BOX_2D *b2 = (BOUND_BOX_2D*)b;
         {
             double sigma2 = (b1->xs + b1->xe + b1->ys + b1->ye) / 2;
             double xmin = min(min(b1->xs, b1->xe),
-                              min(sigma2 - b1->xs, sigma2 - b1->xe)),
+                              min(sigma2 - b1->ys, sigma2 - b1->ye)),
                     xmax = max(max(b1->xs, b1->xe),
-                               max(sigma2 - b1->xs, sigma2 - b1->xe)),
+                               max(sigma2 - b1->ys, sigma2 - b1->ye)),
                     ymin = min(min(b1->ys, b1->ye),
-                               min(sigma2 - b1->ys, sigma2 - b1->ye)),
+                               min(sigma2 - b1->xs, sigma2 - b1->xe)),
                     ymax = max(max(b1->ys, b1->ye),
-                               max(sigma2 - b1->ys, sigma2 - b1->ye));
+                               max(sigma2 - b1->xs, sigma2 - b1->xe));
             if (xmin > b2->xmax || xmax < b2->xmin || ymin > b2->ymax ||
                 ymax < b2->ymin)
                 return false;
@@ -193,6 +244,24 @@ bool intersects_b_b(BOUND* a, BOUND *b)
                 return false;
         }
         return true;
-
     }
+    else if(b->B_type == BT_block2 && a->B_type == BT_box1)
+    {
+        return intersects_b_b(b,a);
+    } else
+    {
+        return false;
+    }
+}
+
+bool intersects_bl_b(const BOUNDLIST* a, const BOUND *b)
+{
+    int i;
+    for(i = 0; i < a->BL_numbox;i++) {
+        if (intersects_b_b(&a->BL_data[i], b))
+        {
+            return true;
+        }
+    }
+    return false;
 }

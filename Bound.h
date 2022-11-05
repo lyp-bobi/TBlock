@@ -55,7 +55,8 @@ typedef struct BOUNDLIST
 {
     BOUNDLISTTYPE BL_type; //type
     unsigned int BL_numbox;
-    struct BOUND BL_data[]; //bounds
+    float xmin, xmax, ymin, ymax;
+    struct BOUND BL_data[1]; //bounds
 }BOUNDLIST;
 
 typedef struct BOUNDLIST_SERL
@@ -72,8 +73,8 @@ extern unsigned int boundlist_datalen_2d(BOUNDLISTTYPE type,unsigned int numbox)
 extern unsigned int boundlist_numbox_2d(BOUNDLISTTYPE type, unsigned int datalen);
 extern BOUNDLIST_SERL boundlist_serl_2d(BOUNDLIST* bl);
 extern BOUNDLIST* boundlist_deserl_2d(BOUNDLIST_SERL in);
-extern bool intersects_b_b(BOUND* a, BOUND *b);
-extern bool intersects_bl_b(BOUNDLIST* a, BOUND *b);
+extern bool intersects_b_b(const BOUND* a, const BOUND *b);
+extern bool intersects_bl_b(const BOUNDLIST* a, const BOUND *b);
 #ifdef __cplusplus
 }
 #endif
