@@ -2,6 +2,7 @@
 // Created by Chuang on 2022/9/24.
 //
 #include <stdlib.h>
+#include <iostream>
 #include <Bound.h>
 
 int main()
@@ -28,5 +29,15 @@ int main()
     a->BL_data[1].B_type = BT_block2;
     buf = boundlist_serl_2d(a);
     b = boundlist_deserl_2d(buf);
+
+    BOUND_BOX_2D b1 = {BT_box1,0, 0,1, 1};
+    BOUND_BLOCK1_2D b2 = {BT_block2, 1.5, 0, 1.5, 1};
+    std::cout<<intersects_b_b((BOUND*)&b1, (BOUND*)&b2);
+    b2 = {BT_block2, 2.5, 0, 2.5, 1};
+    std::cout<<intersects_b_b((BOUND*)&b1, (BOUND*)&b2);
+    b2 = {BT_block2, 2, 0, 2, 4};
+    std::cout<<intersects_b_b((BOUND*)&b1, (BOUND*)&b2);
+    b2 = {BT_block2, 2.1, 0, 2.1, 4};
+    std::cout<<intersects_b_b((BOUND*)&b1, (BOUND*)&b2);
     return 0;
 }

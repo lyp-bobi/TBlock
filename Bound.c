@@ -149,35 +149,35 @@ bool intersects_b_b(BOUND* a, BOUND *b)
 {
     if(a->B_type == BT_box1 && b->B_type == BT_box1)
     {
-        BOUND_BOX_2D *b1 = a,*b2 =b;
+        BOUND_BOX_2D *b1 = (BOUND_BOX_2D*)a, *b2 = (BOUND_BOX_2D*)b;
         if(b1->xmin>b2->xmax || b1->xmax<b2->xmin || b1->ymin>b2->ymax || b1->ymax<b2->ymin)
             return false;
         return true;
     }
-    if(a->B_type == BT_block1 && b->B_type == BT_box1)
+    else if(a->B_type == BT_block1 && b->B_type == BT_box1)
     {
-        BOUND_BLOCK1_2D *b1 = a;
-        BOUND_BOX_2D *b2 = b;
+        BOUND_BLOCK1_2D *b1 = (BOUND_BLOCK1_2D*)a;
+        BOUND_BOX_2D *b2 = (BOUND_BOX_2D*)b;
         double xmin = min(b1->xs,b1->xe), xmax = max(b1->xs,b1->xe),
                 ymin = min(b1->ys,b1->ye), ymax = max(b1->ys,b1->ye);
         if(xmin>b2->xmax || xmax<b2->xmin || ymin>b2->ymax || ymax<b2->ymin)
             return false;
         return true;
     }
-    if(a->B_type == BT_block2 && b->B_type == BT_box1)
+    else if(a->B_type == BT_block2 && b->B_type == BT_box1)
     {
-        BOUND_BLOCK2_2D *b1 = a;
-        BOUND_BOX_2D *b2 = b;
+        BOUND_BLOCK2_2D *b1 = (BOUND_BLOCK2_2D*)a;
+        BOUND_BOX_2D *b2 = (BOUND_BOX_2D*)b;
         {
             double sigma2 = (b1->xs + b1->xe + b1->ys + b1->ye) / 2;
             double xmin = min(min(b1->xs, b1->xe),
-                              min(sigma2 - b1->xs, sigma2 - b1->xe)),
+                              min(sigma2 - b1->ys, sigma2 - b1->ye)),
                     xmax = max(max(b1->xs, b1->xe),
-                               max(sigma2 - b1->xs, sigma2 - b1->xe)),
+                               max(sigma2 - b1->ys, sigma2 - b1->ye)),
                     ymin = min(min(b1->ys, b1->ye),
-                               min(sigma2 - b1->ys, sigma2 - b1->ye)),
+                               min(sigma2 - b1->xs, sigma2 - b1->xe)),
                     ymax = max(max(b1->ys, b1->ye),
-                               max(sigma2 - b1->ys, sigma2 - b1->ye));
+                               max(sigma2 - b1->xs, sigma2 - b1->xe));
             if (xmin > b2->xmax || xmax < b2->xmin || ymin > b2->ymax ||
                 ymax < b2->ymin)
                 return false;
@@ -193,6 +193,24 @@ bool intersects_b_b(BOUND* a, BOUND *b)
                 return false;
         }
         return true;
-
     }
+    else if(b->B_type == BT_block2 && a->B_type == BT_box1)
+    {
+        return intersects_b_b(b,a);
+    } else
+    {
+        return false;
+    }
+}
+
+bool intersects_bl_b(BOUNDLIST* a, BOUND *b)
+{
+    int i;
+    for(i = 0; i < a->BL_numbox;i++) {
+        if (intersects_b_b(&a->BL_data[i], b))
+        {
+            return true;
+        }
+    }
+    return false;
 }
