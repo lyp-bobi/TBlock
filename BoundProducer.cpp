@@ -5,6 +5,7 @@
 #include <string>
 #include <sstream>
 #include <TBlockKey.hpp>
+#include <cfloat>
 
 #include <BoundProducer.hpp>
 using std::vector;
@@ -15,9 +16,24 @@ BOUNDLIST* BOUNDPRODUCER::produce_tbox_list(int numseg)
 {
     double *dlist = (double *) (m_ptarray->serialized_pointlist);
     Trajectory t;
+    BOUNDLIST *res = static_cast<BOUNDLIST *>(malloc(
+            sizeof(BOUNDLIST) + sizeof(BOUND) * numseg));
+    res->xmin = res->ymin = FLT_MAX;
+    res->xmax = res->ymax = -FLT_MAX;
+    res->BL_numbox = numseg;
+    res->BL_type = BLT_boxlist;
+
     for (int i = 0; i < m_ptarray->npoints; i++) {
         t.m_points.emplace_back(
                 Point(dlist[2 * i], dlist[2 * i + 1], i));
+        if(dlist[2 * i] < res->xmin)
+            res->xmin = dlist[2 * i];
+        if(dlist[2 * i + 1] < res->ymin)
+            res->ymin = dlist[2 * i + 1];
+        if(dlist[2 * i] > res->xmax)
+            res->xmax = dlist[2 * i];
+        if(dlist[2 * i + 1] > res->ymax)
+            res->ymax = dlist[2 * i + 1];
     }
     if(t.m_points.size() <= numseg)
     {
@@ -25,10 +41,7 @@ BOUNDLIST* BOUNDPRODUCER::produce_tbox_list(int numseg)
     }
     BEnable ena = {true, false, false, false};
     TBlockRoute c = OPTcost(t, ena, numseg)[numseg];
-    BOUNDLIST *res = static_cast<BOUNDLIST *>(malloc(
-            sizeof(BOUNDLIST) + sizeof(BOUND) * numseg));
-    res->BL_numbox = numseg;
-    res->BL_type = BLT_boxlist;
+
     BOUND_BOX_2D *see = NULL;
     for (int i = 0;i<numseg;i++)
     {
@@ -45,9 +58,21 @@ BOUNDLIST* BOUNDPRODUCER::produce_tblock_list(int numseg)
 {
     double *dlist = (double *) (m_ptarray->serialized_pointlist);
     Trajectory t;
+    BOUNDLIST *res = static_cast<BOUNDLIST *>(malloc(
+            sizeof(BOUNDLIST) + sizeof(BOUND) * numseg));
+    res->BL_numbox = numseg;
+    res->BL_type = BLT_blocklist;
     for (int i = 0; i < m_ptarray->npoints; i++) {
         t.m_points.emplace_back(
                 Point(dlist[2 * i], dlist[2 * i + 1], i));
+        if(dlist[2 * i] < res->xmin)
+            res->xmin = dlist[2 * i];
+        if(dlist[2 * i + 1] < res->ymin)
+            res->ymin = dlist[2 * i + 1];
+        if(dlist[2 * i] > res->xmax)
+            res->xmax = dlist[2 * i];
+        if(dlist[2 * i + 1] > res->ymax)
+            res->ymax = dlist[2 * i + 1];
     }
     if(t.m_points.size() <= numseg)
     {
@@ -59,10 +84,6 @@ BOUNDLIST* BOUNDPRODUCER::produce_tblock_list(int numseg)
         c = GreedyPath(t, ena);
     }
     numseg = c.m_route.size() - 1;
-    BOUNDLIST *res = static_cast<BOUNDLIST *>(malloc(
-            sizeof(BOUNDLIST) + sizeof(BOUND) * numseg));
-    res->BL_numbox = numseg;
-    res->BL_type = BLT_blocklist;
     BOUND_BLOCK1_2D *see1 = NULL;
     BOUND_BLOCK2_2D *see2 = NULL;
     for (int i = 0;i<numseg;i++)
