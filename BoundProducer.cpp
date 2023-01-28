@@ -11,11 +11,16 @@
 using std::vector;
 using std::string;
 
-
+/**
+ * @brief only support 2d now
+ * @param numseg 
+ * @return 
+ */
 BOUNDLIST* BOUNDPRODUCER::produce_tbox_list(int numseg)
 {
     double *dlist = (double *) (m_ptarray->serialized_pointlist);
     Trajectory t;
+	int dim = FLAGS_NDIMS(m_ptarray->flags);
     BOUNDLIST *res = static_cast<BOUNDLIST *>(malloc(
             sizeof(BOUNDLIST) + sizeof(BOUND) * numseg));
     res->xmin = res->ymin = FLT_MAX;
@@ -25,15 +30,15 @@ BOUNDLIST* BOUNDPRODUCER::produce_tbox_list(int numseg)
 
     for (int i = 0; i < m_ptarray->npoints; i++) {
         t.m_points.emplace_back(
-                Point(dlist[2 * i], dlist[2 * i + 1], i));
-        if(dlist[2 * i] < res->xmin)
-            res->xmin = dlist[2 * i];
-        if(dlist[2 * i + 1] < res->ymin)
-            res->ymin = dlist[2 * i + 1];
-        if(dlist[2 * i] > res->xmax)
-            res->xmax = dlist[2 * i];
-        if(dlist[2 * i + 1] > res->ymax)
-            res->ymax = dlist[2 * i + 1];
+                Point(dlist[dim * i], dlist[dim * i + 1], i));
+        if(dlist[dim * i] < res->xmin)
+            res->xmin = dlist[dim * i];
+        if(dlist[dim * i + 1] < res->ymin)
+            res->ymin = dlist[dim * i + 1];
+        if(dlist[dim * i] > res->xmax)
+            res->xmax = dlist[dim * i];
+        if(dlist[dim * i + 1] > res->ymax)
+            res->ymax = dlist[dim * i + 1];
     }
     if(t.m_points.size() <= numseg)
     {
@@ -57,6 +62,7 @@ BOUNDLIST* BOUNDPRODUCER::produce_tbox_list(int numseg)
 BOUNDLIST* BOUNDPRODUCER::produce_tblock_list(int numseg)
 {
     double *dlist = (double *) (m_ptarray->serialized_pointlist);
+	int dim = FLAGS_NDIMS(m_ptarray->flags);
     Trajectory t;
     BOUNDLIST *res = static_cast<BOUNDLIST *>(malloc(
             sizeof(BOUNDLIST) + sizeof(BOUND) * numseg));
@@ -64,15 +70,15 @@ BOUNDLIST* BOUNDPRODUCER::produce_tblock_list(int numseg)
     res->BL_type = BLT_blocklist;
     for (int i = 0; i < m_ptarray->npoints; i++) {
         t.m_points.emplace_back(
-                Point(dlist[2 * i], dlist[2 * i + 1], i));
-        if(dlist[2 * i] < res->xmin)
-            res->xmin = dlist[2 * i];
-        if(dlist[2 * i + 1] < res->ymin)
-            res->ymin = dlist[2 * i + 1];
-        if(dlist[2 * i] > res->xmax)
-            res->xmax = dlist[2 * i];
-        if(dlist[2 * i + 1] > res->ymax)
-            res->ymax = dlist[2 * i + 1];
+                Point(dlist[dim * i], dlist[dim * i + 1], i));
+        if(dlist[dim * i] < res->xmin)
+            res->xmin = dlist[dim * i];
+        if(dlist[dim * i + 1] < res->ymin)
+            res->ymin = dlist[dim * i + 1];
+        if(dlist[dim * i] > res->xmax)
+            res->xmax = dlist[dim * i];
+        if(dlist[dim * i + 1] > res->ymax)
+            res->ymax = dlist[dim * i + 1];
     }
     if(t.m_points.size() <= numseg)
     {
