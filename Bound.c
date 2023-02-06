@@ -89,6 +89,8 @@ BOUNDLIST_SERL boundlist_serl_2d(BOUNDLIST *bl) {
             fltdata[cur++] = bl->BL_data[bl->BL_numbox - 1].B_data[3];
             char *type_char = boolsToBytes(types, bl->BL_numbox);
             memcpy(res + SIZE_BLOCKLIST_FLAG, type_char, len_flag);
+			free(types);
+			free(type_char);
         }
         break;
     }
