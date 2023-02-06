@@ -64,22 +64,21 @@ BOUNDLIST* BOUNDPRODUCER::produce_tblock_list(int numseg)
     double *dlist = (double *) (m_ptarray->serialized_pointlist);
 	int dim = FLAGS_NDIMS(m_ptarray->flags);
     Trajectory t;
-    BOUNDLIST *res = static_cast<BOUNDLIST *>(malloc(
-            sizeof(BOUNDLIST) + sizeof(BOUND) * numseg));
-    res->BL_numbox = numseg;
-    res->BL_type = BLT_blocklist;
-    for (int i = 0; i < m_ptarray->npoints; i++) {
-        t.m_points.emplace_back(
-                Point(dlist[dim * i], dlist[dim * i + 1], i));
-        if(dlist[dim * i] < res->xmin)
-            res->xmin = dlist[dim * i];
-        if(dlist[dim * i + 1] < res->ymin)
-            res->ymin = dlist[dim * i + 1];
-        if(dlist[dim * i] > res->xmax)
-            res->xmax = dlist[dim * i];
-        if(dlist[dim * i + 1] > res->ymax)
-            res->ymax = dlist[dim * i + 1];
-    }
+	double xmin, xmax, ymin, ymax;
+	xmin = ymin = FLT_MAX;
+	xmax = ymax = -FLT_MAX;
+	for (int i = 0; i < m_ptarray->npoints; i++) {
+		t.m_points.emplace_back(
+				Point(dlist[dim * i], dlist[dim * i + 1], i));
+		if(dlist[dim * i] < xmin)
+			xmin = dlist[dim * i];
+		if(dlist[dim * i + 1] < ymin)
+			ymin = dlist[dim * i + 1];
+		if(dlist[dim * i] > xmax)
+			xmax = dlist[dim * i];
+		if(dlist[dim * i + 1] > ymax)
+			ymax = dlist[dim * i + 1];
+	}
     if(t.m_points.size() <= numseg)
     {
         t.resample(numseg+1);
@@ -90,6 +89,14 @@ BOUNDLIST* BOUNDPRODUCER::produce_tblock_list(int numseg)
         c = GreedyPath(t, ena);
     }
     numseg = c.m_route.size() - 1;
+	BOUNDLIST *res = static_cast<BOUNDLIST *>(malloc(
+            sizeof(BOUNDLIST) + sizeof(BOUND) * numseg));
+    res->BL_numbox = numseg;
+    res->BL_type = BLT_blocklist;
+	res->xmin = xmin;
+	res->xmax = xmax;
+	res->ymin = xmin;
+	res->ymax = xmax;
     BOUND_BLOCK1_2D *see1 = NULL;
     BOUND_BLOCK2_2D *see2 = NULL;
     for (int i = 0;i<numseg;i++)
