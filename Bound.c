@@ -6,8 +6,10 @@
 #include <stdbool.h>
 #include <string.h>
 #include <float.h>
+#include <math.h>
 
 #define SIZE_BLOCKLIST_FLAG (1)
+
 
 char *boolsToBytes(bool *t, int numbox) {
     char *b = malloc((numbox + 7) / 8);
@@ -96,7 +98,8 @@ BOUNDLIST_SERL boundlist_serl_2d(BOUNDLIST *bl) {
     }
     return buf;
 }
-
+#define min(a, b) ((a)<(b)?(a):(b))
+#define max(a, b) ((a)>(b)?(a):(b))
 BOUNDLIST *boundlist_deserl_2d(BOUNDLIST_SERL in) {
     char *data = in.BLB_data;
     unsigned int datalen = in.BLB_size;
@@ -153,48 +156,66 @@ BOUNDLIST *boundlist_deserl_2d(BOUNDLIST_SERL in) {
                     bl->BL_data[i-1].B_data[2] = bl->BL_data[i].B_data[0];
                     bl->BL_data[i-1].B_data[3] = bl->BL_data[i].B_data[1];
                 }
-                if(bl->xmin > bl->BL_data[i].B_data[0])
-                {
-                    bl->xmin = bl->BL_data[i].B_data[0];
-                }
-                if(bl->xmax < bl->BL_data[i].B_data[0])
-                {
-                    bl->xmax = bl->BL_data[i].B_data[0];
-                }
-                if(bl->ymin > bl->BL_data[i].B_data[1])
-                {
-                    bl->ymin = bl->BL_data[i].B_data[1];
-                }
-                if(bl->ymax < bl->BL_data[i].B_data[1])
-                {
-                    bl->ymax = bl->BL_data[i].B_data[1];
-                }
             }
             bl->BL_data[bl->BL_numbox - 1].B_data[2] = fltdata[cur++];
             bl->BL_data[bl->BL_numbox - 1].B_data[3] = fltdata[cur++];
-            if(bl->xmin > bl->BL_data[bl->BL_numbox - 1].B_data[0])
+            for(int i = 0; i< bl->BL_numbox;i++)
             {
-                bl->xmin = bl->BL_data[bl->BL_numbox - 1].B_data[0];
-            }
-            if(bl->xmax < bl->BL_data[bl->BL_numbox - 1].B_data[0])
-            {
-                bl->xmax = bl->BL_data[bl->BL_numbox - 1].B_data[0];
-            }
-            if(bl->ymin > bl->BL_data[bl->BL_numbox - 1].B_data[1])
-            {
-                bl->ymin = bl->BL_data[bl->BL_numbox - 1].B_data[1];
-            }
-            if(bl->ymax < bl->BL_data[bl->BL_numbox - 1].B_data[1])
-            {
-                bl->ymax = bl->BL_data[bl->BL_numbox - 1].B_data[1];
+                if(bl->BL_data[i].B_type == BT_block1)
+                {
+                    if(bl->xmin > bl->BL_data[i].B_data[0])
+                    {
+                        bl->xmin = bl->BL_data[i].B_data[0];
+                    }
+                    if(bl->ymin > bl->BL_data[i].B_data[1])
+                    {
+                        bl->ymin = bl->BL_data[i].B_data[1];
+                    }
+                    if(bl->xmax < bl->BL_data[i].B_data[2])
+                    {
+                        bl->xmax = bl->BL_data[i].B_data[2];
+                    }
+                    if(bl->ymax < bl->BL_data[i].B_data[3])
+                    {
+                        bl->ymax = bl->BL_data[i].B_data[3];
+                    }
+                }
+                else if(bl->BL_data[i].B_type == BT_block2)
+                {
+                    BOUND_BLOCK2_2D *b1 = &(bl->BL_data[i]);
+                    double sigma2 = (b1->xs + b1->xe + b1->ys + b1->ye) / 2;
+                    double xmin = min(min(b1->xs, b1->xe),
+                                      min(sigma2 - b1->ys, sigma2 - b1->ye)),
+                            xmax = max(max(b1->xs, b1->xe),
+                                       max(sigma2 - b1->ys, sigma2 - b1->ye)),
+                            ymin = min(min(b1->ys, b1->ye),
+                                       min(sigma2 - b1->xs, sigma2 - b1->xe)),
+                            ymax = max(max(b1->ys, b1->ye),
+                                       max(sigma2 - b1->xs, sigma2 - b1->xe));
+                    if(bl->xmin > xmin)
+                    {
+                        bl->xmin = xmin;
+                    }
+                    if(bl->ymin > ymin)
+                    {
+                        bl->ymin = ymin;
+                    }
+                    if(bl->xmax < xmax)
+                    {
+                        bl->xmax = xmax;
+                    }
+                    if(bl->ymax < ymax)
+                    {
+                        bl->ymax = ymax;
+                    }
+                }
             }
         }
         break;
     }
     return bl;
 }
-#define min(a, b) ((a)<(b)?(a):(b))
-#define max(a, b) ((a)>(b)?(a):(b))
+
 bool intersects_b_b(const BOUND* a, const BOUND *b)
 {
     if(a->B_type == BT_box1 && b->B_type == BT_box1)
