@@ -88,7 +88,7 @@ BOUNDLIST* BOUNDPRODUCER::produce_tblock_list(int numseg)
     if (c.cost > 1e299) {
         c = GreedyPath(t, ena);
     }
-    numseg = c.m_route.size() - 1;
+    numseg = c.m_route.size();
 	BOUNDLIST *res = static_cast<BOUNDLIST *>(malloc(
             sizeof(BOUNDLIST) + sizeof(BOUND) * numseg));
     res->BL_numbox = numseg;
