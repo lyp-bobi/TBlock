@@ -163,28 +163,31 @@ BOUNDLIST *boundlist_deserl_2d(BOUNDLIST_SERL in) {
             {
                 if(bl->BL_data[i].B_type == BT_block1)
                 {
-                    if(bl->xmin > bl->BL_data[i].B_data[0])
-                    {
-                        bl->xmin = bl->BL_data[i].B_data[0];
-                    }
-                    if(bl->ymin > bl->BL_data[i].B_data[1])
-                    {
-                        bl->ymin = bl->BL_data[i].B_data[1];
-                    }
-                    if(bl->xmax < bl->BL_data[i].B_data[2])
-                    {
-                        bl->xmax = bl->BL_data[i].B_data[2];
-                    }
-                    if(bl->ymax < bl->BL_data[i].B_data[3])
-                    {
-                        bl->ymax = bl->BL_data[i].B_data[3];
-                    }
+			BOUND_BLOCK1_2D * b = &bl->BL_data[i];
+			float xmin = min(b->xs,b->xe), xmax = max(b->xs,b->xe),
+					ymin = min(b->ys,b->ye), ymax = max(b->ys,b->ye);
+	                if(bl->xmin > xmin)
+	                {
+		                bl->xmin = xmin;
+	                }
+	                if(bl->ymin > ymin)
+	                {
+		                bl->ymin = ymin;
+	                }
+	                if(bl->xmax < xmax)
+	                {
+		                bl->xmax = xmax;
+	                }
+	                if(bl->ymax < ymax)
+	                {
+		                bl->ymax = ymax;
+	                }
                 }
                 else if(bl->BL_data[i].B_type == BT_block2)
                 {
                     BOUND_BLOCK2_2D *b1 = &(bl->BL_data[i]);
                     double sigma2 = (b1->xs + b1->xe + b1->ys + b1->ye) / 2;
-                    double xmin = min(min(b1->xs, b1->xe),
+                    float xmin = min(min(b1->xs, b1->xe),
                                       min(sigma2 - b1->ys, sigma2 - b1->ye)),
                             xmax = max(max(b1->xs, b1->xe),
                                        max(sigma2 - b1->ys, sigma2 - b1->ye)),
