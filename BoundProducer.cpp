@@ -52,10 +52,31 @@ BOUNDLIST* BOUNDPRODUCER::produce_tbox_list(int numseg)
     {
         see = (BOUND_BOX_2D*)&(res->BL_data[i]);
         res->BL_data->B_type = BT_box1;
-        see->xmin = std::min(t[c.m_route[i].m_ps].m_x, t[c.m_route[i].m_pe].m_x);
-        see->xmax = std::max(t[c.m_route[i].m_ps].m_x, t[c.m_route[i].m_pe].m_x);
-        see->ymin = std::min(t[c.m_route[i].m_ps].m_y, t[c.m_route[i].m_pe].m_y);
-        see->ymax = std::max(t[c.m_route[i].m_ps].m_y, t[c.m_route[i].m_pe].m_y);
+		see->xmin = see->ymin = FLT_MAX;
+		see->xmax = see->ymax = -FLT_MAX;
+		for ( int j = c.m_route[i].m_ps.m_plast; j <= c.m_route[i].m_pe.m_plast; j++)
+		{
+			if(j == c.m_route[i].m_ps.m_plast){
+				see->xmin = std::min(see->xmin, (float)t[c.m_route[i].m_ps].m_x);
+				see->xmax = std::max(see->xmax, (float)t[c.m_route[i].m_ps].m_x);
+				see->ymin = std::min(see->ymin, (float)t[c.m_route[i].m_ps].m_y);
+				see->ymax = std::max(see->ymax, (float)t[c.m_route[i].m_ps].m_y);
+			}
+			else if(j == c.m_route[i].m_pe.m_plast)
+			{
+				see->xmin = std::min(see->xmin, (float)t[c.m_route[i].m_pe].m_x);
+				see->xmax = std::max(see->xmax, (float)t[c.m_route[i].m_pe].m_x);
+				see->ymin = std::min(see->ymin, (float)t[c.m_route[i].m_pe].m_y);
+				see->ymax = std::max(see->ymax, (float)t[c.m_route[i].m_pe].m_y);
+			}
+			else
+			{
+				see->xmin = std::min(see->xmin, (float)t[j].m_x);
+				see->xmax = std::max(see->xmax, (float)t[j].m_x);
+				see->ymin = std::min(see->ymin, (float)t[j].m_y);
+				see->ymax = std::max(see->ymax, (float)t[j].m_y);
+			}
+		}
     }
     return res;
 }
