@@ -54,8 +54,8 @@ unsigned int boundlist_numbox_2d(BOUNDLISTTYPE type, unsigned int datalen) {
                    4 / sizeof(float);
         case BLT_blocklist:
             return (int) (
-                    (datalen - SIZE_BLOCKLIST_FLAG) /
-                    (1.0 / 8 + 2 * sizeof(float))) - 1;
+                    (datalen - SIZE_BLOCKLIST_FLAG - 2 * sizeof(float)) /
+                    (1.0 / 8 + 2 * sizeof(float)));
     }
 }
 
