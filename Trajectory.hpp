@@ -13,7 +13,6 @@
 #include <postgis.h>
 extern double timer_traj;
 
-#include <cstdint>
 
 enum BType{
     T_box1 = 0,
@@ -60,6 +59,7 @@ public:
 
     std::string toString() const ;
     Trajectory(){};
+    Trajectory(POSTGIS_POINTARRAY* ps);
     Trajectory(std::vector<Point>& in)
     {
         m_points=in;

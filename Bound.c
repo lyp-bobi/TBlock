@@ -98,8 +98,7 @@ BOUNDLIST_SERL boundlist_serl_2d(BOUNDLIST *bl) {
     }
     return buf;
 }
-#define min(a, b) ((a)<(b)?(a):(b))
-#define max(a, b) ((a)>(b)?(a):(b))
+
 BOUNDLIST *boundlist_deserl_2d(BOUNDLIST_SERL in) {
     char *data = in.BLB_data;
     unsigned int datalen = in.BLB_size;
@@ -163,7 +162,7 @@ BOUNDLIST *boundlist_deserl_2d(BOUNDLIST_SERL in) {
             {
                 if(bl->BL_data[i].B_type == BT_block1)
                 {
-			BOUND_BLOCK1_2D * b = &bl->BL_data[i];
+			BOUND_BLOCK1_2D * b = (BOUND_BLOCK1_2D*)&bl->BL_data[i];
 			float xmin = min(b->xs,b->xe), xmax = max(b->xs,b->xe),
 					ymin = min(b->ys,b->ye), ymax = max(b->ys,b->ye);
 	                if(bl->xmin > xmin)
@@ -185,7 +184,7 @@ BOUNDLIST *boundlist_deserl_2d(BOUNDLIST_SERL in) {
                 }
                 else if(bl->BL_data[i].B_type == BT_block2)
                 {
-                    BOUND_BLOCK2_2D *b1 = &(bl->BL_data[i]);
+                    BOUND_BLOCK2_2D *b1 = (BOUND_BLOCK2_2D*)&(bl->BL_data[i]);
                     double sigma2 = (b1->xs + b1->xe + b1->ys + b1->ye) / 2;
                     float xmin = min(min(b1->xs, b1->xe),
                                       min(sigma2 - b1->ys, sigma2 - b1->ye)),

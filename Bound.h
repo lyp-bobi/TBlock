@@ -68,6 +68,9 @@ typedef struct BOUNDLIST_SERL
 #ifdef __cplusplus
 extern "C"
 {
+#else
+#define min(a, b) ((a)<(b)?(a):(b))
+#define max(a, b) ((a)>(b)?(a):(b))
 #endif
 extern unsigned int boundlist_datalen_2d(BOUNDLISTTYPE type,unsigned int numbox);
 extern unsigned int boundlist_numbox_2d(BOUNDLISTTYPE type, unsigned int datalen);

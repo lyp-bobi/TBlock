@@ -1,7 +1,7 @@
 //
 // Created by Chuang on 2022/10/3.
 //
-
+#include<stdint.h>
 #ifndef TBLOCK_POSTGIS_H
 #define TBLOCK_POSTGIS_H
 #define LWFLAG_Z        0x01

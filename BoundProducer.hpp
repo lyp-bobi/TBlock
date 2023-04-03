@@ -4,7 +4,7 @@
 
 #ifndef TBLOCK_BOUNDPRODUCER_HPP
 #define TBLOCK_BOUNDPRODUCER_HPP
-#include <cstdint>
+
 #include "postgis.h"
 
 #include "Bound.h"

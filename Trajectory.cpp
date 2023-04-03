@@ -115,6 +115,15 @@ Point Trajectory::operator[](IntRange r)
     return Point(x,y,t);
 }
 
+Trajectory::Trajectory(POSTGIS_POINTARRAY *ps) {
+    double *dlist = (double *) (ps->serialized_pointlist);
+    int dim = FLAGS_NDIMS(ps->flags);
+    for (int i = 0; i < ps->npoints; i++) {
+        m_points.emplace_back(
+                Point(dlist[dim * i], dlist[dim * i + 1], i));
+    }
+}
+
 POSTGIS_POINTARRAY * Trajectory::asptarray() {
     POSTGIS_POINTARRAY *res = static_cast<POSTGIS_POINTARRAY *>(malloc(
             sizeof(POSTGIS_POINTARRAY)));
