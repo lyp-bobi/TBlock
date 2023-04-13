@@ -17,12 +17,18 @@ include_directories(.)
 #include_directories(${GEOS_INCLUDE_DIR})
 
 aux_source_directory(. SRC)
+add_subdirectory(fpzip)
 
-add_library(TBlock SHARED ${SRC})
+add_library(TBlock SHARED ${SRC} $<TARGET_OBJECTS:fpzip>)
+
+
+#target_link_libraries(TBlock fpzip)
+
+add_subdirectory(test)
 
 #target_link_libraries(TBlock ${GEOS_LIBRARY})
 
-add_subdirectory(test)
+
 
 #add_definitions("-g")
 #if(!WIN32)

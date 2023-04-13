@@ -89,6 +89,9 @@ double bound_b_p_mindist_square(BOUND* b, POINT2D p)
             ret += (pv - vmin) * (pv - vmin);
         }
         return ret/2;
+    } else
+    {
+        return 0;
     }
 }
 
