@@ -13,7 +13,7 @@ extern "C"
 #include <Trajectory.hpp>
 
 
-double bound_b_p_mindist_square(BOUND* b, POINT2D p)
+double bound_b_p_mindist_square(BOUND* b, POSTGIS_POINT2D p)
 {
     if(b->B_type == BT_box1)
     {
@@ -95,13 +95,27 @@ double bound_b_p_mindist_square(BOUND* b, POINT2D p)
     }
 }
 
+double bound_bl_bl_mindist_fast_square(BOUNDLIST* bl1, BOUNDLIST* bl2)
+{
+    double dx = 0, dy = 0;
+    if(bl1->xmin > bl2->xmax)
+        dx = bl1->xmin - bl2->xmax;
+    else if(bl2->xmin > bl1->xmax)
+        dx = bl2->xmin - bl1->xmax;
+    if(bl1->ymin > bl2->ymax)
+        dy = bl1->ymin - bl2->ymax;
+    else if(bl2->ymin > bl1->ymax)
+        dy = bl2->ymin - bl1->ymax;
+    return dx*dx + dy*dy;
+}
+
 double dtw_lb(POSTGIS_POINTARRAY *ps, BOUNDLIST *bl)
 {
     double res = 0;
     Trajectory tj(ps);
     for(int i = 0; i < tj.m_points.size(); i++)
     {
-        POINT2D p;
+        POSTGIS_POINT2D p;
         p.x = tj.m_points[i].m_x;
         p.y = tj.m_points[i].m_y;
         double mindist_square = 1e300;

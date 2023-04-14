@@ -171,37 +171,37 @@ if(BUILD_TESTING)
   add_subdirectory(tests)
 endif()
 
-#------------------------------------------------------------------------------#
-# Header install
-#------------------------------------------------------------------------------#
-install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-
-#------------------------------------------------------------------------------#
-# Build type: one of None, Debug, Release, RelWithDebInfo, MinSizeRel
-#------------------------------------------------------------------------------#
-if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY VALUE Release)
-endif()
-
-#------------------------------------------------------------------------------#
-# Packaging
-#------------------------------------------------------------------------------#
-
-# Add all targets to the build-tree export set
-export(TARGETS fpzip NAMESPACE fpzip::
-  FILE "${PROJECT_BINARY_DIR}/fpzip-targets.cmake")
-
-configure_file(fpzip-config.cmake.in
-  "${PROJECT_BINARY_DIR}/fpzip-config.cmake" @ONLY)
-configure_file(fpzip-config-version.cmake.in
-  "${PROJECT_BINARY_DIR}/fpzip-config-version.cmake" @ONLY)
-
-# Install the fpzip-config.cmake and fpzip-config-version.cmake
-install(FILES
-  "${PROJECT_BINARY_DIR}/fpzip-config.cmake"
-  "${PROJECT_BINARY_DIR}/fpzip-config-version.cmake"
-  DESTINATION "${CMAKE_INSTALL_CMAKEDIR}")
-
-# Install the export set for use with the install-tree
-install(EXPORT fpzip-targets NAMESPACE fpzip::
-  DESTINATION "${CMAKE_INSTALL_CMAKEDIR}")
+##------------------------------------------------------------------------------#
+## Header install
+##------------------------------------------------------------------------------#
+#install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+#
+##------------------------------------------------------------------------------#
+## Build type: one of None, Debug, Release, RelWithDebInfo, MinSizeRel
+##------------------------------------------------------------------------------#
+#if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+#  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY VALUE Release)
+#endif()
+#
+##------------------------------------------------------------------------------#
+## Packaging
+##------------------------------------------------------------------------------#
+#
+## Add all targets to the build-tree export set
+#export(TARGETS fpzip NAMESPACE fpzip::
+#  FILE "${PROJECT_BINARY_DIR}/fpzip-targets.cmake")
+#
+#configure_file(fpzip-config.cmake.in
+#  "${PROJECT_BINARY_DIR}/fpzip-config.cmake" @ONLY)
+#configure_file(fpzip-config-version.cmake.in
+#  "${PROJECT_BINARY_DIR}/fpzip-config-version.cmake" @ONLY)
+#
+## Install the fpzip-config.cmake and fpzip-config-version.cmake
+#install(FILES
+#  "${PROJECT_BINARY_DIR}/fpzip-config.cmake"
+#  "${PROJECT_BINARY_DIR}/fpzip-config-version.cmake"
+#  DESTINATION "${CMAKE_INSTALL_CMAKEDIR}")
+#
+## Install the export set for use with the install-tree
+#install(EXPORT fpzip-targets NAMESPACE fpzip::
+#  DESTINATION "${CMAKE_INSTALL_CMAKEDIR}")
