@@ -7,6 +7,7 @@ extern "C"
 #endif
 #include <Bound.h>
 #include <BoundOp.h>
+#include <float.h>
 #ifdef __cplusplus
 }
 #endif
@@ -19,8 +20,8 @@ double bound_b_p_mindist_square(BOUND* b, POSTGIS_POINT2D p)
     {
         double ret = 0;
         BOUND_BOX_2D *b1 = (BOUND_BOX_2D*)b;
-        double xmin = b1->xmin, xmax = b1->xmax,
-                ymin = b1->ymin, ymax = b1->ymax;
+        double xmin = nextafterf(b1->xmin, -FLT_MAX), xmax = nextafterf(b1->xmax, FLT_MAX),
+                ymin = nextafterf(b1->ymin, -FLT_MAX), ymax = nextafterf(b1->ymax, FLT_MAX);
         if(p.x > xmax)
         {
             ret += (p.x - xmax) * (p.x - xmax);
@@ -31,7 +32,7 @@ double bound_b_p_mindist_square(BOUND* b, POSTGIS_POINT2D p)
         }
         if(p.y > ymax)
         {
-            ret += (p.y - ymax) * (p.x - ymax);
+            ret += (p.y - ymax) * (p.y - ymax);
         }
         if(p.y < ymin)
         {
@@ -43,8 +44,8 @@ double bound_b_p_mindist_square(BOUND* b, POSTGIS_POINT2D p)
     {
         double ret = 0;
         BOUND_BLOCK1_2D *b1 = (BOUND_BLOCK1_2D*)b;
-        double xmin = std::min(b1->xs,b1->xe), xmax = std::max(b1->xs,b1->xe),
-                ymin = std::min(b1->ys,b1->ye), ymax = std::max(b1->ys,b1->ye);
+        double xmin = nextafterf(std::min(b1->xs,b1->xe), -FLT_MAX), xmax = nextafterf(std::max(b1->xs,b1->xe), FLT_MAX),
+                ymin = nextafterf(std::min(b1->ys,b1->ye), -FLT_MAX), ymax = nextafterf(std::max(b1->ys,b1->ye), FLT_MAX);
         if(p.x > xmax)
         {
             ret += (p.x - xmax) * (p.x - xmax);
@@ -55,7 +56,7 @@ double bound_b_p_mindist_square(BOUND* b, POSTGIS_POINT2D p)
         }
         if(p.y > ymax)
         {
-            ret += (p.y - ymax) * (p.x - ymax);
+            ret += (p.y - ymax) * (p.y - ymax);
         }
         if(p.y < ymin)
         {
@@ -70,8 +71,8 @@ double bound_b_p_mindist_square(BOUND* b, POSTGIS_POINT2D p)
         BOUND_BLOCK2_2D *b1 = (BOUND_BLOCK2_2D*)b;
         double us = b1->xs + b1->ys, vs = b1->xs - b1->ys,
                 ue = b1->xe + b1->ye, ve = b1->xe - b1->ye;
-        double umin = std::min(us, ue), umax = std::max(us, ue),
-                vmin = std::min(vs, ve), vmax = std::max(vs, ve);
+        double umin = nextafterf(std::min(us, ue), -FLT_MAX), umax = nextafterf(std::max(us, ue), FLT_MAX),
+                vmin = nextafterf(std::min(vs, ve), -FLT_MAX), vmax = nextafterf(std::max(vs, ve), FLT_MAX);
         if(pu > umax)
         {
             ret += (pu - umax) * (pu - umax);
@@ -82,7 +83,7 @@ double bound_b_p_mindist_square(BOUND* b, POSTGIS_POINT2D p)
         }
         if(pv > vmax)
         {
-            ret += (pu - vmax) * (pu - vmax);
+            ret += (pv - vmax) * (pv - vmax);
         }
         if(pv < vmin)
         {
@@ -124,6 +125,8 @@ double dtw_lb(POSTGIS_POINTARRAY *ps, BOUNDLIST *bl)
             double dist = bound_b_p_mindist_square(&(bl->BL_data[j]), p);
             if(dist < mindist_square)
                 mindist_square = dist;
+            if(dist == 0)
+                break;
         }
         res += sqrt(mindist_square);
     }

@@ -115,10 +115,10 @@ BOUNDLIST *boundlist_deserl_2d(BOUNDLIST_SERL in) {
                     data + SIZE_BLOCKLIST_FLAG);
             int cur = 0;
             for (int i = 0; i < numbox; i++) {
-                bl->BL_data[i].B_data[0] = fltdata[cur++];
-                bl->BL_data[i].B_data[1] = fltdata[cur++];
-                bl->BL_data[i].B_data[2] = fltdata[cur++];
-                bl->BL_data[i].B_data[3] = fltdata[cur++];
+                bl->BL_data[i].B_data[0] = nextafterf(fltdata[cur++], -FLT_MAX);
+                bl->BL_data[i].B_data[1] = nextafterf(fltdata[cur++], -FLT_MAX);
+                bl->BL_data[i].B_data[2] = nextafterf(fltdata[cur++], FLT_MAX);
+                bl->BL_data[i].B_data[3] = nextafterf(fltdata[cur++], FLT_MAX);
                 bl->BL_data[i].B_type = BT_box1;
                 if(bl->xmin > bl->BL_data[i].B_data[0])
                 {
@@ -162,9 +162,9 @@ BOUNDLIST *boundlist_deserl_2d(BOUNDLIST_SERL in) {
             {
                 if(bl->BL_data[i].B_type == BT_block1)
                 {
-			BOUND_BLOCK1_2D * b = (BOUND_BLOCK1_2D*)&bl->BL_data[i];
-			float xmin = min(b->xs,b->xe), xmax = max(b->xs,b->xe),
-					ymin = min(b->ys,b->ye), ymax = max(b->ys,b->ye);
+                    BOUND_BLOCK1_2D * b = (BOUND_BLOCK1_2D*)&bl->BL_data[i];
+                    float xmin = min(b->xs,b->xe), xmax = max(b->xs,b->xe),
+                            ymin = min(b->ys,b->ye), ymax = max(b->ys,b->ye);
 	                if(bl->xmin > xmin)
 	                {
 		                bl->xmin = xmin;
