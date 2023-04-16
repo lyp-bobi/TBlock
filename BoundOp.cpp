@@ -13,6 +13,8 @@ extern "C"
 #endif
 #include <Trajectory.hpp>
 
+#define float_down(f)   nextafterf(nextafterf((f),-FLT_MAX),-FLT_MAX)
+#define float_up(f)   nextafterf(nextafterf((f),FLT_MAX),FLT_MAX)
 
 double bound_b_p_mindist_square(BOUND* b, POSTGIS_POINT2D p)
 {
@@ -20,8 +22,8 @@ double bound_b_p_mindist_square(BOUND* b, POSTGIS_POINT2D p)
     {
         double ret = 0;
         BOUND_BOX_2D *b1 = (BOUND_BOX_2D*)b;
-        double xmin = nextafterf(b1->xmin, -FLT_MAX), xmax = nextafterf(b1->xmax, FLT_MAX),
-                ymin = nextafterf(b1->ymin, -FLT_MAX), ymax = nextafterf(b1->ymax, FLT_MAX);
+        double xmin =float_down(b1->xmin), xmax =float_up(b1->xmax),
+                ymin =float_down(b1->ymin), ymax =float_up(b1->ymax);
         if(p.x > xmax)
         {
             ret += (p.x - xmax) * (p.x - xmax);
@@ -44,8 +46,8 @@ double bound_b_p_mindist_square(BOUND* b, POSTGIS_POINT2D p)
     {
         double ret = 0;
         BOUND_BLOCK1_2D *b1 = (BOUND_BLOCK1_2D*)b;
-        double xmin = nextafterf(std::min(b1->xs,b1->xe), -FLT_MAX), xmax = nextafterf(std::max(b1->xs,b1->xe), FLT_MAX),
-                ymin = nextafterf(std::min(b1->ys,b1->ye), -FLT_MAX), ymax = nextafterf(std::max(b1->ys,b1->ye), FLT_MAX);
+        double xmin =float_down(std::min(b1->xs,b1->xe)), xmax =float_up(std::max(b1->xs,b1->xe)),
+                ymin =float_down(std::min(b1->ys,b1->ye)), ymax =float_up(std::max(b1->ys,b1->ye));
         if(p.x > xmax)
         {
             ret += (p.x - xmax) * (p.x - xmax);
@@ -71,8 +73,8 @@ double bound_b_p_mindist_square(BOUND* b, POSTGIS_POINT2D p)
         BOUND_BLOCK2_2D *b1 = (BOUND_BLOCK2_2D*)b;
         double us = b1->xs + b1->ys, vs = b1->xs - b1->ys,
                 ue = b1->xe + b1->ye, ve = b1->xe - b1->ye;
-        double umin = nextafterf(std::min(us, ue), -FLT_MAX), umax = nextafterf(std::max(us, ue), FLT_MAX),
-                vmin = nextafterf(std::min(vs, ve), -FLT_MAX), vmax = nextafterf(std::max(vs, ve), FLT_MAX);
+        double umin =float_down(std::min(us, ue)), umax =float_up(std::max(us, ue)),
+                vmin =float_down(std::min(vs, ve)), vmax =float_up(std::max(vs, ve));
         if(pu > umax)
         {
             ret += (pu - umax) * (pu - umax);
