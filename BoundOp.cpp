@@ -134,3 +134,22 @@ double dtw_lb(POSTGIS_POINTARRAY *ps, BOUNDLIST *bl)
     }
     return res;
 }
+
+#include <BoundProducer.hpp>
+
+bool use_tblock = true;
+
+BOUNDLIST* ptarray_to_boundlist(POSTGIS_POINTARRAY *ptarr)
+{
+    BOUNDLIST *ret;
+    BOUNDPRODUCER prod(ptarr);
+    if(use_tblock)
+    {
+        ret = prod.produce_tbox_list(8);
+    }
+    else
+    {
+        ret = prod.produce_tblock_list(8);
+    }
+    return ret;
+}

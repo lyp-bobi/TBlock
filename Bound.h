@@ -6,6 +6,7 @@
 #define TBLOCK_TBLOCK_H
 
 #include <stdbool.h>
+#include <postgis.h>
 
 // type of boxes
 //
@@ -78,6 +79,7 @@ extern BOUNDLIST_SERL boundlist_serl_2d(BOUNDLIST* bl);
 extern BOUNDLIST* boundlist_deserl_2d(BOUNDLIST_SERL in);
 extern bool intersects_b_b(const BOUND* a, const BOUND *b);
 extern bool intersects_bl_b(const BOUNDLIST* a, const BOUND *b);
+extern BOUNDLIST* ptarray_to_boundlist(POSTGIS_POINTARRAY *ptarr);
 #ifdef __cplusplus
 }
 #endif
