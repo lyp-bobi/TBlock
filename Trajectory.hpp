@@ -10,7 +10,7 @@
 #include "MBR.hpp"
 #include "chrono"
 #include <memory>
-#include <postgis.h>
+#include "postgis.h"
 extern double timer_traj;
 
 

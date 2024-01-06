@@ -6,7 +6,7 @@
 #define TBLOCK_TBLOCK_H
 
 #include <stdbool.h>
-#include <postgis.h>
+#include "postgis.h"
 
 // type of boxes
 //
