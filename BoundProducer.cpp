@@ -11,6 +11,8 @@
 using std::vector;
 using std::string;
 
+bool greedy_path = true;
+
 /**
  * @brief only support 2d now
  * @param numseg 
@@ -45,7 +47,14 @@ BOUNDLIST* BOUNDPRODUCER::produce_tbox_list(int numseg)
         t.resample(numseg+1);
     }
     BEnable ena = {true, false, false, false};
-    TBlockRoute c = OPTcost(t, ena, numseg)[numseg];
+
+    TBlockRoute c;
+
+    if (!greedy_path) {
+        c = OPTcost(t, ena, numseg)[numseg];
+    } else {
+        c = GreedyPathElite(t, ena, numseg);
+    }
 
     BOUND_BOX_2D *see = NULL;
     for (int i = 0;i<numseg;i++)
@@ -105,9 +114,14 @@ BOUNDLIST* BOUNDPRODUCER::produce_tblock_list(int numseg)
         t.resample(numseg+1);
     }
     BEnable ena = {false, false, true, true};
-    TBlockRoute c = OPTcost(t, ena, numseg)[numseg];
-    if (c.cost > 1e299) {
-        c = GreedyPath(t, ena);
+    TBlockRoute c;
+    if (!greedy_path) {
+        c = OPTcost(t, ena, numseg)[numseg];
+        if (c.cost > 1e299) {
+            c = GreedyPath(t, ena);
+        }
+    } else {
+        c = GreedyPathElite(t, ena, numseg);
     }
     numseg = c.m_route.size();
 	BOUNDLIST *res = static_cast<BOUNDLIST *>(malloc(

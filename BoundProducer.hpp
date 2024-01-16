@@ -9,10 +9,13 @@
 
 #include "Bound.h"
 
+extern bool greedy_path;
+
 class BOUNDPRODUCER
 {
 private:
     POSTGIS_POINTARRAY *m_ptarray;
+
 public:
     BOUNDPRODUCER(POSTGIS_POINTARRAY* p): m_ptarray(p){};
     BOUNDLIST* produce_tbox_list(int numseg);
