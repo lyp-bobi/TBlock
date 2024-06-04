@@ -79,7 +79,11 @@ extern BOUNDLIST_SERL boundlist_serl_2d(BOUNDLIST* bl);
 extern BOUNDLIST* boundlist_deserl_2d(BOUNDLIST_SERL in);
 extern bool intersects_b_b(const BOUND* a, const BOUND *b);
 extern bool intersects_bl_b(const BOUNDLIST* a, const BOUND *b);
+extern bool intersects_bl_pt(POSTGIS_POINTARRAY *ptarr, const BOUNDLIST *b);
+bool intersects_bl_ptarr(POSTGIS_POINTARRAY *ptarr, const BOUNDLIST *b);
 extern BOUNDLIST* ptarray_to_boundlist(POSTGIS_POINTARRAY *ptarr);
+extern BOUNDLIST* ptarray_to_boundlist_maxsize(POSTGIS_POINTARRAY *ptarr, int maxbox);
+
 #ifdef __cplusplus
 }
 #endif

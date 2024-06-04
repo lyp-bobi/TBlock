@@ -1,16 +1,12 @@
 //
 // Created by Chuang on 2023/3/21.
 //
-#ifdef __cplusplus
 extern "C"
 {
-#endif
 #include <Bound.h>
 #include <BoundOp.h>
 #include <float.h>
-#ifdef __cplusplus
 }
-#endif
 #include <Trajectory.hpp>
 
 #define float_down(f)   nextafterf(nextafterf((f),-FLT_MAX),-FLT_MAX)
@@ -143,7 +139,7 @@ BOUNDLIST* ptarray_to_boundlist(POSTGIS_POINTARRAY *ptarr)
 {
     BOUNDLIST *ret;
     BOUNDPRODUCER prod(ptarr);
-    if(use_tblock)
+    if(!use_tblock)
     {
         ret = prod.produce_tbox_list(8);
     }
@@ -152,4 +148,90 @@ BOUNDLIST* ptarray_to_boundlist(POSTGIS_POINTARRAY *ptarr)
         ret = prod.produce_tblock_list(8);
     }
     return ret;
+}
+
+BOUNDLIST* ptarray_to_boundlist_maxsize(POSTGIS_POINTARRAY *ptarr, int maxbox)
+{
+    BOUNDLIST *ret;
+    BOUNDPRODUCER prod(ptarr);
+    if(!use_tblock)
+    {
+        ret = prod.produce_tbox_list(8);
+    }
+    else
+    {
+        ret = prod.produce_tblock_list(8);
+        if (ret->BL_numbox > maxbox)
+        {
+            free(ret);
+            ret = prod.produce_tbox_list(8);
+        }
+    }
+    return ret;
+}
+
+
+static bool intersects_b_line(double x1, double y1, double x2, double y2, const BOUND *b)
+{
+    if(b->B_type == BT_box1 || b->B_type == BT_block1)
+    {
+        BOUND_BOX_2D *b2 = (BOUND_BOX_2D*)b;
+        MBR r(b2->xmin, b2->xmax, b2->ymin, b2->ymax, -FLT_MAX, FLT_MAX);
+        Point p1(x1,y1,0), p2(x2,y2,0);
+        return r.intersects(p1,p2);
+    }
+    else if(b->B_type == BT_block2)
+    {
+        BOUND_BLOCK2_2D *b1 = (BOUND_BLOCK2_2D*)b;
+        {
+            double u1 = x1 + y1, v1 = x1 - y1,
+                u2 = x2 + y2, v2 = x2 - y2;
+
+            double us = b1->xs + b1->ys, vs = b1->xs - b1->ys,
+                    ue = b1->xe + b1->ye, ve = b1->xe - b1->ye;
+            double umin1 = std::min(us, ue), umax1 = std::max(us, ue),
+                    vmin1 = std::min(vs, ve), vmax1 = std::max(vs, ve);
+            MBR r(umin1, umax1, vmin1, vmax1, -FLT_MAX, FLT_MAX);
+            Point p1(u1, v1, 0), p2(u2, v2, 0);
+            return r.intersects(p1, p2);
+        }
+    }
+    else
+    {
+        return false;
+    }
+}
+
+bool intersects_bl_ptarr(POSTGIS_POINTARRAY *ptarr, const BOUNDLIST *b)
+{
+    double *dlist = (double *) (ptarr->serialized_pointlist);
+    Trajectory t;
+    int dim = FLAGS_NDIMS(ptarr->flags);
+    int i;
+    for (i = 0; i < ptarr->npoints; i++) {
+        t.m_points.emplace_back(
+                Point(dlist[dim * i], dlist[dim * i + 1], i));
+    }
+    MBR r = t.getMBR();
+    BOUND_BOX_2D r2d;
+    r2d.B_type = BT_box1;
+    r2d.xmin = r.m_xmin;
+    r2d.xmax = r.m_xmax;
+    r2d.ymin = r.m_ymin;
+    r2d.ymax = r.m_ymax;
+    for (i = 0; i< b->BL_numbox; i++)
+    {
+        if (intersects_bl_b(b, (BOUND*)&r2d))
+        {
+            for (int j = 0; j < t.m_points.size() - 1;j++)
+            {
+                if (intersects_b_line(t.m_points[j].m_x, t.m_points[j].m_y,
+                                      t.m_points[j+1].m_x, t.m_points[j+1].m_y, &b->BL_data[i]))
+                {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
 }

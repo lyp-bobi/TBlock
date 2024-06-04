@@ -28,6 +28,12 @@ add_subdirectory(test)
 
 #target_link_libraries(TBlock ${GEOS_LIBRARY})
 
+install(
+        TARGETS TBlock
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        RUNTIME DESTINATION bin
+)
 
 
 #add_definitions("-g")
