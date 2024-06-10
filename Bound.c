@@ -7,6 +7,7 @@
 #include <string.h>
 #include <float.h>
 #include <math.h>
+#include <stdio.h>
 
 #define SIZE_BLOCKLIST_FLAG (1)
 
@@ -115,10 +116,14 @@ BOUNDLIST *boundlist_deserl_2d(BOUNDLIST_SERL in) {
                     data + SIZE_BLOCKLIST_FLAG);
             int cur = 0;
             for (int i = 0; i < numbox; i++) {
-                bl->BL_data[i].B_data[0] = nextafterf(fltdata[cur++], -FLT_MAX);
-                bl->BL_data[i].B_data[1] = nextafterf(fltdata[cur++], -FLT_MAX);
-                bl->BL_data[i].B_data[2] = nextafterf(fltdata[cur++], FLT_MAX);
-                bl->BL_data[i].B_data[3] = nextafterf(fltdata[cur++], FLT_MAX);
+//                bl->BL_data[i].B_data[0] = nextafterf(fltdata[cur++], -FLT_MAX);
+//                bl->BL_data[i].B_data[1] = nextafterf(fltdata[cur++], -FLT_MAX);
+//                bl->BL_data[i].B_data[2] = nextafterf(fltdata[cur++], FLT_MAX);
+//                bl->BL_data[i].B_data[3] = nextafterf(fltdata[cur++], FLT_MAX);
+                bl->BL_data[i].B_data[0] = fltdata[cur++];
+                bl->BL_data[i].B_data[1] = fltdata[cur++];
+                bl->BL_data[i].B_data[2] = fltdata[cur++];
+                bl->BL_data[i].B_data[3] = fltdata[cur++];
                 bl->BL_data[i].B_type = BT_box1;
                 if(bl->xmin > bl->BL_data[i].B_data[0])
                 {
@@ -286,4 +291,22 @@ bool intersects_bl_b(const BOUNDLIST* a, const BOUND *b)
         }
     }
     return false;
+}
+
+char* boundlist_to_string(BOUNDLIST *bl)
+{
+    char* res = malloc(100*bl->BL_numbox),*cur = res;
+    cur += sprintf(res, "BL %d(%f,%f,%f,%f)\n", bl->BL_numbox, bl->xmin, bl->ymin, bl->xmax, bl->ymax);
+    for(int i=0;i<bl->BL_numbox;i++)
+    {
+        if (bl->BL_data[i].B_type == BT_box1 || bl->BL_data[i].B_type == BT_block1)
+        {
+            cur += sprintf(cur, "%dBOX(%f,%f,%f,%f)\n", i,bl->BL_data[i].B_data[0],bl->BL_data[i].B_data[1],bl->BL_data[i].B_data[2],bl->BL_data[i].B_data[3] );
+        }
+        else
+        {
+            cur += sprintf(cur, "%dBLOCK(%f,%f,%f,%f)\n", i,bl->BL_data[i].B_data[0],bl->BL_data[i].B_data[1],bl->BL_data[i].B_data[2],bl->BL_data[i].B_data[3] );
+        }
+    }
+    return res;
 }

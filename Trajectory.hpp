@@ -64,7 +64,7 @@ public:
     {
         m_points=in;
     }
-    void loadFromString(std::string s);
+    void loadFromString(std::string s, char pnt_sep = ',', char dim_sep = ' ');
 
     POSTGIS_POINTARRAY *asptarray();
 

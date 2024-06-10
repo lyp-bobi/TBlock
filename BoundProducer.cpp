@@ -11,7 +11,7 @@
 using std::vector;
 using std::string;
 
-bool greedy_path = true;
+bool greedy_path = false;
 
 /**
  * @brief only support 2d now
@@ -53,14 +53,14 @@ BOUNDLIST* BOUNDPRODUCER::produce_tbox_list(int numseg)
     if (!greedy_path) {
         c = OPTcost(t, ena, numseg)[numseg];
     } else {
-        c = GreedyPathElite(t, ena, numseg);
+        c = GreedyBox(t, ena, numseg);
     }
 
     BOUND_BOX_2D *see = NULL;
     for (int i = 0;i<numseg;i++)
     {
         see = (BOUND_BOX_2D*)&(res->BL_data[i]);
-        res->BL_data->B_type = BT_box1;
+        res->BL_data[i].B_type = BT_box1;
 		see->xmin = see->ymin = FLT_MAX;
 		see->xmax = see->ymax = -FLT_MAX;
 		for ( int j = c.m_route[i].m_ps.m_plast; j <= c.m_route[i].m_pe.m_plast; j++)
@@ -116,12 +116,13 @@ BOUNDLIST* BOUNDPRODUCER::produce_tblock_list(int numseg)
     BEnable ena = {false, false, true, true};
     TBlockRoute c;
     if (!greedy_path) {
-        c = OPTcost(t, ena, numseg)[numseg];
+        c = OPTcostMin(t, ena, numseg)[numseg];
         if (c.cost > 1e299) {
             c = GreedyPath(t, ena);
         }
     } else {
-        c = GreedyPathElite(t, ena, numseg);
+//        c = GreedyPath(t, ena);
+        c = GreedyPathMod(t, ena, numseg);
     }
     numseg = c.m_route.size();
 	BOUNDLIST *res = static_cast<BOUNDLIST *>(malloc(
@@ -130,8 +131,8 @@ BOUNDLIST* BOUNDPRODUCER::produce_tblock_list(int numseg)
     res->BL_type = BLT_blocklist;
 	res->xmin = xmin;
 	res->xmax = xmax;
-	res->ymin = xmin;
-	res->ymax = xmax;
+	res->ymin = ymin;
+	res->ymax = ymax;
     BOUND_BLOCK1_2D *see1 = NULL;
     BOUND_BLOCK2_2D *see2 = NULL;
     for (int i = 0;i<numseg;i++)
@@ -153,6 +154,10 @@ BOUNDLIST* BOUNDPRODUCER::produce_tblock_list(int numseg)
             see2->xe = t[c.m_route[i].m_pe].m_x;
             see2->ys = t[c.m_route[i].m_ps].m_y;
             see2->ye = t[c.m_route[i].m_pe].m_y;
+        }
+        else
+        {
+            throw std::runtime_error("should be block");
         }
     }
     return res;

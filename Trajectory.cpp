@@ -33,11 +33,12 @@ std::string Trajectory::toString() const {
     return s;
 }
 
-void Trajectory::loadFromString(std::string str) {
+void Trajectory::loadFromString(std::string str, char pnt_sep, char dim_sep) {
     m_points.clear();
-    std::vector<std::string> points = split(str, ' ');
+    std::vector<std::string> points = split(str, pnt_sep);
     for (const auto &p: points) {
-        std::vector<std::string> xyt = split(p, ',');
+        std::vector<std::string> xyt = split(p, dim_sep);
+//        std::cerr<<xyt[0]<<"\t"<<xyt[1]<<"\t"<<xyt[2]<<"\n";
         m_points.emplace_back(
                 Point(std::stod(xyt[0]), std::stod(xyt[1]), std::stod(xyt[2])));
     }
@@ -129,13 +130,15 @@ POSTGIS_POINTARRAY * Trajectory::asptarray() {
             sizeof(POSTGIS_POINTARRAY)));
     res->npoints = m_points.size();
     res->maxpoints = res->npoints;
-    res->serialized_pointlist = (uint8_t*) malloc(2 * sizeof(double) * m_points.size());
+    res->flags = LWFLAG_M;
+    res->serialized_pointlist = (uint8_t*) malloc(3 * sizeof(double) * m_points.size());
     double * data = (double*)(res->serialized_pointlist);
     int cur = 0;
     for(auto &p:m_points)
     {
-        data[cur++]=p.m_x;
+        data[cur++] = p.m_x;
         data[cur++] = p.m_y;
+        data[cur++] = p.m_t;
     }
     return res;
 }

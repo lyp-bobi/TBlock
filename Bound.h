@@ -84,6 +84,8 @@ bool intersects_bl_ptarr(POSTGIS_POINTARRAY *ptarr, const BOUNDLIST *b);
 extern BOUNDLIST* ptarray_to_boundlist(POSTGIS_POINTARRAY *ptarr);
 extern BOUNDLIST* ptarray_to_boundlist_maxsize(POSTGIS_POINTARRAY *ptarr, int maxbox);
 
+extern char* boundlist_to_string(BOUNDLIST *bl);
+
 #ifdef __cplusplus
 }
 #endif

@@ -156,15 +156,15 @@ BOUNDLIST* ptarray_to_boundlist_maxsize(POSTGIS_POINTARRAY *ptarr, int maxbox)
     BOUNDPRODUCER prod(ptarr);
     if(!use_tblock)
     {
-        ret = prod.produce_tbox_list(8);
+        ret = prod.produce_tbox_list(64);
     }
     else
     {
-        ret = prod.produce_tblock_list(8);
+        ret = prod.produce_tblock_list(64);
         if (ret->BL_numbox > maxbox)
         {
             free(ret);
-            ret = prod.produce_tbox_list(8);
+            ret = prod.produce_tbox_list(16);
         }
     }
     return ret;
