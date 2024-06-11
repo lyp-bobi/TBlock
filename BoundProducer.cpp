@@ -116,7 +116,7 @@ BOUNDLIST* BOUNDPRODUCER::produce_tblock_list(int numseg)
     BEnable ena = {false, false, true, true};
     TBlockRoute c;
     if (!greedy_path) {
-        c = OPTcostMin(t, ena, numseg)[numseg];
+        c = OPTcostMin(t, ena);
         if (c.cost > 1e299) {
             c = GreedyPath(t, ena);
         }

@@ -80,7 +80,7 @@ public:
 
 extern std::vector<TBlockRoute> OPTcost(Trajectory &tj, BEnable ena,int numbox = 1e9);
 
-extern std::vector<TBlockRoute> OPTcostMin(Trajectory &tj, BEnable ena,int numbox = 1e9);
+extern TBlockRoute OPTcostMin(Trajectory &tj, BEnable ena);
 
 extern std::vector<double> OPTcostGlobal(std::vector<Trajectory> &tjs, int nbox, BEnable ena);
 
