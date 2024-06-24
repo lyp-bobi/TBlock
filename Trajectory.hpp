@@ -53,6 +53,8 @@ struct IntRange{
     IntRange(int i):m_plast(i),m_ratio(0){};
 };
 
+
+
 class Trajectory{
 public:
     std::vector<Point> m_points;
@@ -77,5 +79,8 @@ public:
     int locateTime(int l,int h, double time, int dir);
     bool stepIn(MBR &r);
     bool passBy(MBR &r);
+
+    Trajectory toUV();
+    Trajectory toXY();
 };
 #endif //TBLOCK_TRAJECTORY_HPP

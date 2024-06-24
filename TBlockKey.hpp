@@ -59,7 +59,7 @@ struct TBlockRouteEntry{
 
 struct TBlockRoute{
     std::vector<TBlockRouteEntry> m_route;
-    double cost;
+    double cost = 1e300;
 public:
     std::string toString()
     {
@@ -73,6 +73,20 @@ public:
     }
 };
 
+struct SingleBound {
+    double xmin, xmax,ymin, ymax;
+};
+
+#define BoundSize(b) (((b).xmax - (b).xmin) * ((b).ymax - (b).ymin))
+
+struct BoundPreCalc{
+    std::vector<std::vector<SingleBound>> boundxy;
+    std::vector<std::vector<SingleBound>> bounduv;
+    std::vector<std::vector<bool>> availxy;
+    std::vector<std::vector<bool>> availuv;
+};
+
+extern BoundPreCalc getBoundMat(Trajectory &tj);
 
 
 

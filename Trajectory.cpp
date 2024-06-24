@@ -180,3 +180,21 @@ void Trajectory::resample(int numseg) {
         m_points.swap(res);
     }
 }
+
+Trajectory Trajectory::toUV() {
+    Trajectory res;
+    for (auto &p:m_points)
+    {
+        res.m_points.emplace_back(Point(p.m_x+p.m_y, p.m_x-p.m_y, p.m_t));
+    }
+    return res;
+}
+
+Trajectory Trajectory::toXY() {
+    Trajectory res;
+    for (auto &p:m_points)
+    {
+        res.m_points.emplace_back(Point((p.m_x+p.m_y)/2, (p.m_x-p.m_y)/2, p.m_t));
+    }
+    return res;
+}

@@ -53,6 +53,34 @@ double minSize(BSize size) {
     return size.size[res];
 }
 
+BSize blockSizeCached(Trajectory &tj, int a, int b, BEnable ena, BoundPreCalc &cal) {
+    if (a > b) {
+        int tmp;
+        tmp = a;
+        a = b;
+        b = tmp;
+    }
+    BSize s = {1e300, 1e300, 1e300, 1e300};
+
+    if (ena.enable[T_box1]) {
+        s.size[T_box1] = BoundSize(cal.boundxy[a][b]);
+    }
+
+    if (ena.enable[T_box2]) {
+        s.size[T_box2] = BoundSize(cal.bounduv[a][b]) / 2;
+    }
+
+    if (ena.enable[T_block1] && cal.availxy[a][b]) {
+        s.size[T_block1] = BoundSize(cal.boundxy[a][b]);
+    }
+
+    if (ena.enable[T_block2] && cal.availuv[a][b]) {
+        s.size[T_block2] = BoundSize(cal.bounduv[a][b]) / 2;
+    }
+
+    return s;
+}
+
 BSize blockSize(Trajectory &tj, int a, int b, BEnable ena) {
     if (a > b) {
         int tmp;
@@ -129,6 +157,79 @@ BSize blockSize(Trajectory &tj, int a, int b, BEnable ena) {
     return size;
 }
 
+extern BoundPreCalc getBoundMat(Trajectory &tj)
+{
+    BoundPreCalc res;
+    Trajectory tjuv = tj.toUV();
+    int i,j,k;
+    int npoint = tj.m_points.size();
+    res.boundxy.resize(npoint);
+    res.bounduv.resize(npoint);
+    res.availxy.resize(npoint);
+    res.availuv.resize(npoint);
+    
+    for (i=0;i<npoint;i++) {
+        res.boundxy[i].resize(npoint);
+        res.bounduv[i].resize(npoint);
+        res.availxy[i].resize(npoint);
+        res.availuv[i].resize(npoint);
+        for (j = i ; j < npoint; j++) {
+            res.boundxy[i][j].xmin = res.boundxy[i][j].ymin = res.bounduv[i][j].xmin = res.bounduv[i][j].ymin = 1e300;
+            res.boundxy[i][j].xmax = res.boundxy[i][j].ymax = res.bounduv[i][j].xmax = res.bounduv[i][j].ymax = -1e300;
+            res.availxy[i][j] = res.availuv[i][j] = true;
+        }
+    }
+    
+    SingleBound blockb;
+#define ContainedBy(a,b) ((a).xmin >= (b).xmin && (a).ymin >= (b).ymin && (a).xmax <= (b).xmax && (a).ymax <= (b).ymax)
+    
+    for (i=0;i<npoint;i++)
+    {
+        for (j=i;j<npoint;j++)
+        {
+            if (j > i)
+                res.boundxy[i][j] = res.boundxy[i][j-1];
+            res.boundxy[i][j].xmin = std::min(res.boundxy[i][j].xmin,
+                                              tj.m_points[j].m_x);
+            res.boundxy[i][j].ymin = std::min(res.boundxy[i][j].ymin,
+                                              tj.m_points[j].m_y);
+            res.boundxy[i][j].xmax = std::max(res.boundxy[i][j].xmax,
+                                              tj.m_points[j].m_x);
+            res.boundxy[i][j].ymax = std::max(res.boundxy[i][j].ymax,
+                                              tj.m_points[j].m_y);
+            
+            blockb.xmin = std::min(tj.m_points[i].m_x, tj.m_points[j].m_x);
+            blockb.xmax = std::max(tj.m_points[i].m_x, tj.m_points[j].m_x);
+            blockb.ymin = std::min(tj.m_points[i].m_y, tj.m_points[j].m_y);
+            blockb.ymax = std::max(tj.m_points[i].m_y, tj.m_points[j].m_y);
+            
+            res.availxy[i][j] = ContainedBy(res.boundxy[i][j], blockb);
+
+            if (j > i)
+                res.bounduv[i][j] = res.bounduv[i][j-1];
+            res.bounduv[i][j].xmin = std::min(res.bounduv[i][j].xmin,
+                                              tjuv.m_points[j].m_x);
+            res.bounduv[i][j].ymin = std::min(res.bounduv[i][j].ymin,
+                                              tjuv.m_points[j].m_y);
+            res.bounduv[i][j].xmax = std::max(res.bounduv[i][j].xmax,
+                                              tjuv.m_points[j].m_x);
+            res.bounduv[i][j].ymax = std::max(res.bounduv[i][j].ymax,
+                                              tjuv.m_points[j].m_y);
+            
+            blockb.xmin = std::min(tjuv.m_points[i].m_x, tjuv.m_points[j].m_x);
+            blockb.xmax = std::max(tjuv.m_points[i].m_x, tjuv.m_points[j].m_x);
+            blockb.ymin = std::min(tjuv.m_points[i].m_y, tjuv.m_points[j].m_y);
+            blockb.ymax = std::max(tjuv.m_points[i].m_y, tjuv.m_points[j].m_y);
+            
+            res.availuv[i][j] = ContainedBy(res.bounduv[i][j], blockb);
+        }
+    }
+
+
+    return res;
+}
+
+
 vector<TBlockRoute> OPTcost(Trajectory &tj, BEnable ena, int numbox) {
     /*
      * DP table
@@ -189,12 +290,10 @@ TBlockRoute OPTcostMin(Trajectory &tj, BEnable ena) {
      */
     vector<vector<TBlockRoute>> dmat;
     dmat.resize(tj.m_points.size());
+    BoundPreCalc calc = getBoundMat(tj);
     int i = 1, j, k;
     for (auto &vec: dmat) {
         vec.resize(i); /*n+1 points can at most be expressed by n boxes*/
-        for (auto &d:vec) {
-            d.cost = 1e300;
-        }
         i++;
     }
     BSize s = {1e300, 1e300, 1e300, 1e300};;
@@ -202,13 +301,13 @@ TBlockRoute OPTcostMin(Trajectory &tj, BEnable ena) {
         for (i = k; i < tj.m_points.size(); i++) {// last id of points
             if (k == 1) {
                 j = 0;
-                s = blockSize(tj, i, j, ena);
+                s = blockSizeCached(tj, i, j, ena, calc);
                 dmat[i][k].m_route.emplace_back(
                         TBlockRouteEntry(j, i, minType(s), s));
                 dmat[i][k].cost = minSize(s);
             } else {
                 for (j = k - 1; j < i; j++) { //last chosen point
-                    s = blockSize(tj, i, j, ena);
+                    s = blockSizeCached(tj, i, j, ena, calc);
                     double value = dmat[j][k - 1].cost + minSize(s);
                     if (dmat[i][k].cost > value) {
                         dmat[i][k].cost = value;

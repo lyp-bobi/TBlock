@@ -109,10 +109,10 @@ BOUNDLIST* BOUNDPRODUCER::produce_tblock_list(int numseg)
 		if(dlist[dim * i + 1] > ymax)
 			ymax = dlist[dim * i + 1];
 	}
-    if(t.m_points.size() <= numseg)
-    {
-        t.resample(numseg+1);
-    }
+//    if(t.m_points.size() <= numseg)
+//    {
+//        t.resample(numseg+1);
+//    }
     BEnable ena = {false, false, true, true};
     TBlockRoute c;
     if (!greedy_path) {
