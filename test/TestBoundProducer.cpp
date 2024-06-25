@@ -26,7 +26,7 @@ int main() {
 
     BOUNDLIST *bl;
 //    bl = prod.produce_tbox_list(4);
-    for (int i = 0; i < 10; i ++) {
+    for (int i = 0; i < 1; i ++) {
         bl = prod.produce_tblock_list(8);
     }
     BOUNDLIST_SERL serl = boundlist_serl_2d(bl);

@@ -82,6 +82,7 @@ struct SingleBound {
 struct BoundPreCalc{
     std::vector<std::vector<SingleBound>> boundxy;
     std::vector<std::vector<SingleBound>> bounduv;
+    std::vector<std::vector<BSize>> volume;
     std::vector<std::vector<bool>> availxy;
     std::vector<std::vector<bool>> availuv;
 };

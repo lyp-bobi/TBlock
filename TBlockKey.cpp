@@ -2,6 +2,10 @@
 // Created by Chuang on 2021/10/5.
 //
 #include "TBlockKey.hpp"
+
+#include <queue>
+#include <stack>
+
 #include "Trajectory.hpp"
 #include "vector"
 
@@ -35,50 +39,28 @@ double areaBlock(Point &a, Point &b, BType type) {
     return 1e300;
 }
 
-BType minType(BSize size) {
-    BType res = T_box1;
-    for (auto &t:{T_box2, T_block1, T_block2}) {
-        if (size.size[t] < size.size[res])
-            res = t;
+BType minType(BSize size, BEnable ena) {
+    BType res;
+    double ressize = 1e300;
+    for (auto &b: {T_box1, T_box2, T_block1, T_block2}) {
+        if(ena.enable[b] && size.size[b] < ressize) {
+            res = b;
+            ressize = size.size[b];
+        }
     }
     return res;
 }
 
-double minSize(BSize size) {
-    BType res = T_box1;
-    for (auto &t:{T_box2, T_block1, T_block2}) {
-        if (size.size[t] < size.size[res])
-            res = t;
+double minSize(BSize size, BEnable ena) {
+    BType res;
+    double ressize = 1e300;
+    for (auto &b: {T_box1, T_box2, T_block1, T_block2}) {
+        if(ena.enable[b] && size.size[b] < ressize) {
+            res = b;
+            ressize = size.size[b];
+        }
     }
     return size.size[res];
-}
-
-BSize blockSizeCached(Trajectory &tj, int a, int b, BEnable ena, BoundPreCalc &cal) {
-    if (a > b) {
-        int tmp;
-        tmp = a;
-        a = b;
-        b = tmp;
-    }
-    BSize s = {1e300, 1e300, 1e300, 1e300};
-
-    if (ena.enable[T_box1]) {
-        s.size[T_box1] = BoundSize(cal.boundxy[a][b]);
-    }
-
-    if (ena.enable[T_box2]) {
-        s.size[T_box2] = BoundSize(cal.bounduv[a][b]) / 2;
-    }
-
-    if (ena.enable[T_block1] && cal.availxy[a][b]) {
-        s.size[T_block1] = BoundSize(cal.boundxy[a][b]);
-    }
-
-    if (ena.enable[T_block2] && cal.availuv[a][b]) {
-        s.size[T_block2] = BoundSize(cal.bounduv[a][b]) / 2;
-    }
-
-    return s;
 }
 
 BSize blockSize(Trajectory &tj, int a, int b, BEnable ena) {
@@ -167,17 +149,14 @@ extern BoundPreCalc getBoundMat(Trajectory &tj)
     res.bounduv.resize(npoint);
     res.availxy.resize(npoint);
     res.availuv.resize(npoint);
+    res.volume.resize(npoint);
     
     for (i=0;i<npoint;i++) {
-        res.boundxy[i].resize(npoint);
-        res.bounduv[i].resize(npoint);
-        res.availxy[i].resize(npoint);
-        res.availuv[i].resize(npoint);
-        for (j = i ; j < npoint; j++) {
-            res.boundxy[i][j].xmin = res.boundxy[i][j].ymin = res.bounduv[i][j].xmin = res.bounduv[i][j].ymin = 1e300;
-            res.boundxy[i][j].xmax = res.boundxy[i][j].ymax = res.bounduv[i][j].xmax = res.bounduv[i][j].ymax = -1e300;
-            res.availxy[i][j] = res.availuv[i][j] = true;
-        }
+        res.boundxy[i].resize(npoint, {1e300,-1e300, 1e300, -1e300});
+        res.bounduv[i].resize(npoint,{1e300,-1e300, 1e300, -1e300});
+        res.availxy[i].resize(npoint, true);
+        res.availuv[i].resize(npoint, true);
+        res.volume[i].resize(npoint);
     }
     
     SingleBound blockb;
@@ -205,6 +184,13 @@ extern BoundPreCalc getBoundMat(Trajectory &tj)
             
             res.availxy[i][j] = ContainedBy(res.boundxy[i][j], blockb);
 
+            res.volume[i][j].size[T_box1] = BoundSize(res.boundxy[i][j]);
+
+            if (res.availxy[i][j])
+                res.volume[i][j].size[T_block1] = res.volume[i][j].size[T_box1];
+            else
+                res.volume[i][j].size[T_block1] = 1e300;
+
             if (j > i)
                 res.bounduv[i][j] = res.bounduv[i][j-1];
             res.bounduv[i][j].xmin = std::min(res.bounduv[i][j].xmin,
@@ -222,10 +208,15 @@ extern BoundPreCalc getBoundMat(Trajectory &tj)
             blockb.ymax = std::max(tjuv.m_points[i].m_y, tjuv.m_points[j].m_y);
             
             res.availuv[i][j] = ContainedBy(res.bounduv[i][j], blockb);
+
+            res.volume[i][j].size[T_box2] = BoundSize(res.bounduv[i][j])/2;
+
+            if (res.availuv[i][j])
+                res.volume[i][j].size[T_block2] = res.volume[i][j].size[T_box2];
+            else
+                res.volume[i][j].size[T_block2] = 1e300;
         }
     }
-
-
     return res;
 }
 
@@ -253,17 +244,17 @@ vector<TBlockRoute> OPTcost(Trajectory &tj, BEnable ena, int numbox) {
                 j = 0;
                 s = blockSize(tj, i, j, ena);
                 dmat[i][k].m_route.emplace_back(
-                        TBlockRouteEntry(j, i, minType(s), s));
-                dmat[i][k].cost = minSize(s);
+                        TBlockRouteEntry(j, i, minType(s, ena), s));
+                dmat[i][k].cost = minSize(s, ena);
             } else {
                 for (j = k-1; j < i; j++) { //last chosen point
                     s = blockSize(tj, i, j, ena);
-                    double value = dmat[j][k - 1].cost + minSize(s);
+                    double value = dmat[j][k - 1].cost + minSize(s, ena);
                     if (dmat[i][k].cost > value) {
                         dmat[i][k].cost = value;
                         dmat[i][k].m_route = dmat[j][k - 1].m_route;
                         dmat[i][k].m_route.emplace_back(
-                                TBlockRouteEntry(j, i, minType(s), s));
+                                TBlockRouteEntry(j, i, minType(s, ena), s));
                     }
                 }
             }
@@ -282,13 +273,18 @@ vector<TBlockRoute> OPTcost(Trajectory &tj, BEnable ena, int numbox) {
     return dmat.back();
 }
 
+struct dmatcell {
+    double cost = 1e300;
+    int last =0;
+};
+
 TBlockRoute OPTcostMin(Trajectory &tj, BEnable ena) {
     /*
      * DP table
      * |the first point| using one box| using two box | ...
      * |the second point| using one box| using two box | ...
      */
-    vector<vector<TBlockRoute>> dmat;
+    vector<vector<dmatcell>> dmat;
     dmat.resize(tj.m_points.size());
     BoundPreCalc calc = getBoundMat(tj);
     int i = 1, j, k;
@@ -301,39 +297,47 @@ TBlockRoute OPTcostMin(Trajectory &tj, BEnable ena) {
         for (i = k; i < tj.m_points.size(); i++) {// last id of points
             if (k == 1) {
                 j = 0;
-                s = blockSizeCached(tj, i, j, ena, calc);
-                dmat[i][k].m_route.emplace_back(
-                        TBlockRouteEntry(j, i, minType(s), s));
-                dmat[i][k].cost = minSize(s);
+                s = calc.volume[j][i];
+                dmat[i][k].last = j;
+                dmat[i][k].cost = minSize(s, ena);
             } else {
                 for (j = k - 1; j < i; j++) { //last chosen point
-                    s = blockSizeCached(tj, i, j, ena, calc);
-                    double value = dmat[j][k - 1].cost + minSize(s);
+                    s = calc.volume[j][i];
+                    double value = dmat[j][k - 1].cost + minSize(s, ena);
                     if (dmat[i][k].cost > value) {
                         dmat[i][k].cost = value;
-                        dmat[i][k].m_route = dmat[j][k - 1].m_route;
-                        dmat[i][k].m_route.emplace_back(
-                                TBlockRouteEntry(j, i, minType(s), s));
+                        dmat[i][k].last = j;
                     }
                 }
             }
             if (i == tj.m_points.size() -1 && dmat[i][k].cost < 1e300)
             {
-//                for (int ii=1; ii< tj.m_points.size(); ii++)
-//                {
-//                    std::cerr<<ii<<"\t";
-//                    for (int kk =1;kk <std::min(ii,9);kk++)
-//                    {
-//                        std::cerr<<dmat[ii][kk].cost <<"\t";
-//                    }
-//                    std::cerr<<"\n";
-//                }
-                return dmat[i][k];
+                std::stack<int> route;
+                TBlockRoute res;
+                int next = i, boxidx = k, last = dmat[next][boxidx].last;
+                res.m_route.reserve(k);
+                while (last != 0) {
+                    route.emplace(next);
+                    next = last;
+                    boxidx --;
+                    last = dmat[next][boxidx].last;
+                }
+                route.emplace(next);
+                last = 0;
+                while(!route.empty()) {
+                    next = route.top();
+                    route.pop();
+                    s = calc.volume[j][i];
+                    res.m_route.emplace_back(TBlockRouteEntry(last, next, minType(s, ena), s));
+                    last = next;
+                }
+                res.cost = dmat[i][k].cost;
+                return res;
             }
         }
     }
 
-    return dmat[i][k];
+    return TBlockRoute();
 }
 TBlockRoute GreedyPath(Trajectory &tj, BEnable ena) {
     int ps = 0;
@@ -344,9 +348,9 @@ TBlockRoute GreedyPath(Trajectory &tj, BEnable ena) {
         for (i = tj.m_points.size(); i >ps ; i--)
         {
             BSize s = blockSize(tj, ps, i, ena);
-            if (minSize(s) < 1e299)
+            if (minSize(s, ena) < 1e299)
             {
-                res.m_route.emplace_back(TBlockRouteEntry(ps, i, minType(s), s));
+                res.m_route.emplace_back(TBlockRouteEntry(ps, i, minType(s, ena), s));
                 ps = i;
             }
         }
@@ -453,7 +457,7 @@ picksplitpoint(Trajectory &tj, int s, int e, BEnable ena) {
     for (int i = s + 1; i < e; i++) {
         BSize s1 = blockSize(tj, s, i, ena);
         BSize s2 = blockSize(tj, i, e, ena);
-        double d = minSize(s1) + minSize(s2);
+        double d = minSize(s1, ena) + minSize(s2, ena);
         if (d < size) {
             mini = i;
             bests1 = s1;
@@ -476,9 +480,9 @@ TBlockRoute GreedyPathMod(Trajectory &tj, BEnable ena, int numseg) {
     if (top.m_pe.m_plast - top.m_ps.m_plast > 1) {
         auto s = picksplitpoint(tj, top.m_ps.m_plast, top.m_pe.m_plast, ena);
         pq.push(TBlockRouteEntry(top.m_ps, std::get<0>(s),
-                                 minType(std::get<1>(s)), std::get<1>(s)));
+                                 minType(std::get<1>(s), ena), std::get<1>(s)));
         pq.push(TBlockRouteEntry(std::get<0>(s), top.m_pe,
-                                 minType(std::get<2>(s)), std::get<2>(s)));
+                                 minType(std::get<2>(s), ena), std::get<2>(s)));
     } else {
         IntRange mid = top.m_ps;
         mid.m_ratio =
